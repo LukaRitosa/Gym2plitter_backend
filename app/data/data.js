@@ -281,3 +281,38 @@ export const user_splits=[
         ]
     }
 ]
+
+export const vjezbe=[
+    {
+        id: 1,
+        opis: "Kontrolirano spuštanje utega s blagim pregibom koljena, fokus na istezanju zadnje lože i podizanju kukova prema naprijed.",
+        glavni_misic: "Hamstring (Stražnja loža)",
+        naziv: "Rumunjsko mrtvo dizanje (RDL)",
+        ostali_misici: [
+            "Gluteus (Stražnjica)",
+            "Donja leđa (Erector spinae)"
+        ]
+    },
+    {
+        id: 2,
+        opis: "Podizanje tijela iz visećeg položaja do razine brade povlačenjem iz leđa. Može se izvoditi s različitim hvatovima.",
+        glavni_misic: "Latissimus dorsi (Široki leđni)",
+        naziv: "Zgibovi",
+        ostali_misici: [
+            "Biceps",
+            "Trapezius",
+            "Podlaktice"
+        ]
+    },
+    {
+        id: 3,
+        opis: "Potisak šipke iznad glave iz stojećeg položaja, aktivirajući ramena i stabilizatore trupa.",
+        glavni_misic: "Deltoideus (Ramena)",
+        naziv: "Overhead press – vojnički potisak",
+        ostali_misici: [
+            "Triceps",
+            "Gornja prsa",
+            "Stabilizatori jezgre"
+        ]
+    }
+]
