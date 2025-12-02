@@ -13,9 +13,9 @@ export const users=[
         id: 1,
         username: "Ivan Horvat",
         email: "ivan.horvat@example.com",
-        trenutniSplit_id: 4,
+        trenutniSplit_id: 2,
         slobodni_dani: ["nedjelja", "utorak"],
-        user_splitovi: [1, 4],     
+        user_splitovi: [1, 2],     
         custom_vjezbe: [8, 9]      
     },
 
