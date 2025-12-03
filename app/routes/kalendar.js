@@ -15,6 +15,10 @@ router.get('/:id', (req, res)=>{
 
     const split= user_splits.find(s => s.id==user.trenutniSplit_id)
 
+    if(!split){
+        return res.status(200).json({odgovor: 'Korisnik nema aktivan split'})
+    }
+
     return res.status(200).json(split.kalendar)
 })
 

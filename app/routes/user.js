@@ -42,8 +42,8 @@ router.get('/:id/split', (req, res)=>{
 })
 
 router.post('/:id_u/:id_s', (req, res)=>{
-    const id_user= req.params.id_u
-    const id_split=req.params.id_s
+    const id_user= Number(req.params.id_u)
+    const id_split=Number(req.params.id_s)
 
     const userIndex= users.findIndex(u=> u.id==id_user)
 
@@ -57,9 +57,15 @@ router.post('/:id_u/:id_s', (req, res)=>{
         return res.status(404).json({greska: `split s id-em ${id_split} ne postoji`})
     }
 
-    user_splits.push(split)
+    const novi_id=user_splits.at(-1)['id'] + 1
 
-    users.at(userIndex)['user_splitovi'].push(id_split)
+    split.id=novi_id
+       
+
+
+    user_splits.push({...split})
+
+    users.at(userIndex)['user_splitovi'].push(novi_id)
 
     return res.status(200).json(users.at(userIndex))
 

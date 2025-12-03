@@ -2,6 +2,7 @@ import express from 'express'
 import splitRouter from './routes/split.js'
 import userRouter from './routes/user.js'
 import kalendarRouter from './routes/kalendar.js'
+import vjezbaRouter from './routes/vjezba.js'
 
 
 
@@ -12,6 +13,7 @@ app.use(express.json())
 app.use('/split', splitRouter)
 app.use('/user', userRouter)
 app.use('/kalendar', kalendarRouter)
+app.use('/vjezba', vjezbaRouter)
 
 
 app.listen(port, (error)=>{
