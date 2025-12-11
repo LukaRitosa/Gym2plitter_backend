@@ -284,7 +284,7 @@ export const user_splits=[
 
 export const vjezbe=[
     {
-        id: 1,
+        id: 0,
         opis: "Kontrolirano spuštanje utega s blagim pregibom koljena, fokus na istezanju zadnje lože i podizanju kukova prema naprijed.",
         glavni_misic: "Hamstring (Stražnja loža)",
         naziv: "Rumunjsko mrtvo dizanje (RDL)",
@@ -294,7 +294,7 @@ export const vjezbe=[
         ]
     },
     {
-        id: 2,
+        id: 1,
         opis: "Podizanje tijela iz visećeg položaja do razine brade povlačenjem iz leđa. Može se izvoditi s različitim hvatovima.",
         glavni_misic: "Latissimus dorsi (Široki leđni)",
         naziv: "Zgibovi",
@@ -305,7 +305,7 @@ export const vjezbe=[
         ]
     },
     {
-        id: 3,
+        id: 2,
         opis: "Potisak šipke iznad glave iz stojećeg položaja, aktivirajući ramena i stabilizatore trupa.",
         glavni_misic: "Deltoideus (Ramena)",
         naziv: "Overhead press – vojnički potisak",
@@ -319,7 +319,7 @@ export const vjezbe=[
 
 export const splits=[
     {
-        id: 10,
+        id: 0,
         naziv: "Full Body 3x",
         broj_dana: 3,
         opis: "Trening cijelog tijela tri puta tjedno, idealno za početnike ili povratnike.",
@@ -359,7 +359,7 @@ export const splits=[
         ]
     },
     {
-        id: 11,
+        id: 1,
         naziv: "Push Pull 4x",
         broj_dana: 4,
         opis: "Jednostavna podjela na potisne i povlačne mišiće, trenirano dvaput tjedno.",
@@ -409,7 +409,7 @@ export const splits=[
         ]
     },
     {
-        id: 12,
+        id: 2,
         naziv: "Upper Lower 2x",
         broj_dana: 2,
         opis: "Minimalistički split za zauzete osobe – dva treninga tjedno, jedan za gornji i jedan za donji dio tijela.",
@@ -442,24 +442,24 @@ export const splits=[
 
 export const custom_vjezbe=[
     {
-        id: 201,
-        id_usera: 5,
+        id: 0,
+        id_usera: 3,
         naziv: "Incline bench bučicama (spor tempo)",
         opis: "Potisak bučicama na kosoj klupi uz sporije ekscentrično spuštanje (3 sekunde).",
         glavni_misic: "Prsa (gornji dio)",
         ostali_misici: ["Prednja ramena", "Triceps"]
     },
     {
-        id: 202,
-        id_usera: 5,
+        id: 1,
+        id_usera: 1,
         naziv: "Hip thrust s pauzom",
         opis: "Podizanje kukova s pauzom od 2 sekunde na vrhu pokreta za bolje aktiviranje gluteusa.",
         glavni_misic: "Gluteus",
         ostali_misici: ["Hamstrings", "Donja leđa"]
     },
     {
-        id: 203,
-        id_usera: 5,
+        id: 2,
+        id_usera: 1,
         naziv: "Zgibovi s elastičnom trakom",
         opis: "Pomoćna traka omogućava pravilniji i dublji zgib uz manji otpor.",
         glavni_misic: "Latissimus (široki leđni)",

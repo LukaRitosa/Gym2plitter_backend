@@ -13,7 +13,7 @@ app.use(express.json())
 app.use('/split', splitRouter)
 app.use('/user', userRouter)
 app.use('/kalendar', kalendarRouter)
-app.use('/vjezba', vjezbaRouter)
+app.use('/vjezbe', vjezbaRouter)
 
 
 app.listen(port, (error)=>{

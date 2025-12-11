@@ -5,7 +5,7 @@ const router = express.Router()
 
 
 router.get('/', (req, res)=>{
-    res.status(200).send('Tu su vježbe')
+    res.status(200).send({vjezbe})
 })
 
 router.post('/', (req, res)=>{
@@ -27,9 +27,12 @@ router.post('/', (req, res)=>{
         'Quadriceps (Prednja loža)', 'Hamstring (Stražnja loža)',  'List', 'Gluteus (stražnjica)', 'Trbuh'
     ]
 
+    const krivi_misic= !svi_misici.includes(nova_vjezba.glavni_misic)
+
+
     const krivi_misici=nova_vjezba.ostali_misici.some(m=> !svi_misici.includes(m))
 
-    if(krivi_misici){
+    if(krivi_misici || krivi_misic){
         return res.status(400).json({greska: 'Mišići vježbe nisu dozvoljeni'})
     }
 
