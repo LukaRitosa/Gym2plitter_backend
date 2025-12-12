@@ -146,4 +146,43 @@ router.post('/:id/vjezba', (req, res)=>{
 })
 
 
+router.get('/:id/dan/:split_dan', (req, res)=>{
+    const id_korisnik=req.params.id
+
+    const id_dan=req.params.split_dan
+
+    const korisnik= users.find(k=> k.id==id_korisnik)
+
+    if(!korisnik){
+        return res.status(404).json({greska: `Korisnik s id-em ${id_korisnik} ne postoji`})
+    }
+
+    const split= user_splits.find(s=> s.id==korisnik.trenutniSplit_id)
+
+    const dan=split.dani.find(d=>d.dan == id_dan)
+
+    if(dan.length==0){
+        return res.status(404).json({greska: `U trenutnom splitu ne postoji dan ${id_dan}`})
+    }
+
+    const vjezbe_dan=dan.vjezbe
+
+    if(vjezbe_dan.length==0){
+        return res.status(200).json(dan)
+    }
+
+    const detaljne_vjezbe = vjezbe_dan.map(vj => {
+        const vjezba = vjezbe.find(v => v.id == vj.id);
+        return {
+            ...vjezba,
+            broj_setova: vj.broj_setova
+        };
+    });
+
+    dan.vjezbe=detaljne_vjezbe
+
+    return res.status(200).json(dan)
+})
+
+
 export default router
