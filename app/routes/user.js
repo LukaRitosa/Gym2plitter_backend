@@ -43,7 +43,7 @@ router.get('/:id/split', (req, res)=>{
 
 router.post('/:id_u/split/:id_s', (req, res)=>{
     const id_user= Number(req.params.id_u)
-    const split=req.body
+    const split=Number(req.params.id_s)
 
     const userIndex= users.findIndex(u=> u.id==id_user)
 
@@ -51,18 +51,28 @@ router.post('/:id_u/split/:id_s', (req, res)=>{
         return res.status(404).json({greska: `Korisnik s id-em ${id_user} ne postoji`})
     }
 
+    const splitIndex=splits.findIndex(s=>s.id==split)
+
+    if(splitIndex==-1){
+        return res.status(404).json({greska: `Korisnik s id-em ${id_s} ne postoji`})
+    }
+
+    const novi_split=splits.at(splitIndex)
+
+
+
     
     const novi_id=user_splits.at(-1)['id'] + 1
 
-    split.id=novi_id
+    novi_split.id=novi_id
        
 
 
-    user_splits.push({...split})
+    user_splits.push({...novi_split})
 
     users.at(userIndex)['user_splitovi'].push(novi_id)
 
-    return res.status(200).json(users.at(userIndex))
+    return res.status(200).json({user: users.at(userIndex), split: user_splits.at(-1)})
 
 })
 
