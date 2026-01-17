@@ -1,11 +1,52 @@
 import express from 'express';
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
+
+import { connectToDatabase } from '../db.js';
+
+
+
 const router = express.Router();
 
+let db = await connectToDatabase();
+
+router.get('/', async (req, res) => {
+    let user_collection= db.collection('users')
+    let sviUseri= await user_collection.find().toArray()
+    res.status(200).json(sviUseri)
+})
 
 
-router.get('/', (req, res)=>{
-    return res.status(200).json(users)
+
+router.post('/', async (req, res)=>{
+    const user_collection= db.collection('users')
+    const novi_user= req.body
+
+    const obavezni_kljucevi= ['username', 'email', 'prehrana']
+
+    if(!obavezni_kljucevi.every(k => k in novi_user)){
+        return res.status(400).json({error: 'Krivi oblik korisnika'})
+    }
+
+    if(!Array.isArray(novi_user.prehrana) || !novi_user.prehrana.length===7){
+        return res.status(400).json({error: 'Krivi oblik prehrane'})
+    }
+
+    let rez={}
+
+    try{
+        const postoji= await user_collection.find(u => u.email=== novi_user.email)
+
+        if(postoji){
+            return res.status(400).json({error: 'Korisnik kojeg pokušavate stvoriti već posoji'})
+        }
+
+        rez= await user_collection.insertOne(novi_user)
+
+        return res.status(201).json(rez.insertedId)
+    } catch (error) {
+        console.log(error.errorResponse)
+        return res.status(400).json({error: error.errorResponse})
+    }
 })
 
 router.get('/:id/splits', (req, res)=>{

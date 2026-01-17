@@ -1,34 +1,541 @@
 export const users=[
-    {
-        id: 0,
-        username:"Marko Markić",
-        email:"marko@gmail.com", 
-        trenutniSplit_id: 0, 
-        slobodni_dani:["ponedjeljak", "utorak", "srijeda", "četvrtak", "petak", "subota"],
-        user_splitovi: [0, 2, 3],
-        custom_vjezbe: [0, 5, 7]
-    },
-
-    {
-        id: 1,
-        username: "Ivan Horvat",
-        email: "ivan.horvat@example.com",
-        trenutniSplit_id: 2,
-        slobodni_dani: ["nedjelja", "utorak"],
-        user_splitovi: [1, 2],     
-        custom_vjezbe: [8, 9]      
-    },
-
-    {
-        id: 2,
-        username: "Ana Kovač",
-        email: "ana.kovac@example.com",
-        trenutniSplit_id: 6,
-        slobodni_dani: ["petak"],
-        user_splitovi: [3, 6, 7],  
-        custom_vjezbe: [2, 10, 11] 
-    }
+  {
+    "cilj": "održavanje",
+    "cilj_kalorije": 2555,
+    "cilj_proteini": 160,
+    "dob": 21,
+    "email": "korisnik1@gmail.com",
+    "prehrana": [
+      {
+        "datum": "2026-01-10",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-01-11",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-01-12",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-01-13",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-01-14",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-01-15",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-01-16",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      }
+    ],
+    "sex": "m",
+    "slobodni_dani": ["ponedjeljak", "srijeda", "petak", "subota", "nedjelja"],
+    "slobodnoVrijeme": "5 dana",
+    "tezina": 80,
+    "trenutniSplit": "splitID1",
+    "username": "korisnik1",
+    "visina": 180
+  },
+  {
+    "cilj": "mršavljenje",
+    "cilj_kalorije": 2000,
+    "cilj_proteini": 130,
+    "dob": 25,
+    "email": "korisnik2@gmail.com",
+    "prehrana": [
+      {
+        "datum": "2026-02-01",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-02-02",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-02-03",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-02-04",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-02-05",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-02-06",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-02-07",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      }
+    ],
+    "sex": "ž",
+    "slobodni_dani": ["utorak", "četvrtak", "petak", "subota"],
+    "slobodnoVrijeme": "4 dana",
+    "tezina": 65,
+    "trenutniSplit": "splitID2",
+    "username": "korisnik2",
+    "visina": 165
+  },
+  {
+    "cilj": "dobivanje mase",
+    "cilj_kalorije": 3200,
+    "cilj_proteini": 180,
+    "dob": 30,
+    "email": "korisnik3@gmail.com",
+    "prehrana": [
+      {
+        "datum": "2026-03-05",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-03-06",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-03-07",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-03-08",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-03-09",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-03-10",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-03-11",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      }
+    ],
+    "sex": "m",
+    "slobodni_dani": ["ponedjeljak", "srijeda", "petak"],
+    "slobodnoVrijeme": "3 dana",
+    "tezina": 90,
+    "trenutniSplit": "splitID3",
+    "username": "korisnik3",
+    "visina": 185
+  },
+  {
+    "cilj": "održavanje",
+    "cilj_kalorije": 2300,
+    "cilj_proteini": 150,
+    "dob": 28,
+    "email": "korisnik4@gmail.com",
+    "prehrana": [
+      {
+        "datum": "2026-04-10",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-04-11",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-04-12",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-04-13",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-04-14",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-04-15",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-04-16",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      }
+    ],
+    "sex": "ž",
+    "slobodni_dani": ["utorak", "četvrtak", "subota"],
+    "slobodnoVrijeme": "3 dana",
+    "tezina": 70,
+    "trenutniSplit": "splitID4",
+    "username": "korisnik4",
+    "visina": 170
+  },
+  {
+    "cilj": "mršavljenje",
+    "cilj_kalorije": 1800,
+    "cilj_proteini": 120,
+    "dob": 24,
+    "email": "korisnik5@gmail.com",
+    "prehrana": [
+      {
+        "datum": "2026-05-01",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-05-02",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-05-03",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-05-04",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-05-05",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-05-06",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      },
+      {
+        "datum": "2026-05-07",
+        "ostvareneKalorije": 0,
+        "ostvareniProteini": 0,
+        "pojedeno": {
+          "dorucak": [],
+          "marenda": [],
+          "nekarakterizirano": [],
+          "rucak": [],
+          "snack": [],
+          "vecera": []
+        }
+      }
+    ],
+    "sex": "m",
+    "slobodni_dani": ["ponedjeljak", "srijeda", "petak", "nedjelja"],
+    "slobodnoVrijeme": "4 dana",
+    "tezina": 75,
+    "trenutniSplit": "splitID5",
+    "username": "korisnik5",
+    "visina": 175
+  }
 ]
+
 
 export const user_splits=[
     {
