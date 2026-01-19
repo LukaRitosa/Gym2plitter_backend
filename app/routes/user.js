@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
 })
 
 
-
+ 
 router.post('/', async (req, res)=>{
     const user_collection= db.collection('users')
     const novi_user= req.body
@@ -34,7 +34,7 @@ router.post('/', async (req, res)=>{
     let rez={}
 
     try{
-        const postoji= await user_collection.find(u => u.email=== novi_user.email)
+        const postoji= await user_collection.findOne({email: novi_user.email})
 
         if(postoji){
             return res.status(400).json({error: 'Korisnik kojeg pokušavate stvoriti već posoji'})

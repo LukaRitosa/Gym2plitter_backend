@@ -1,17 +1,28 @@
 import express from 'express';
 import { splits } from '../data/data.js'
+import { connectToDatabase } from '../db.js';
+
+
+
 const router = express.Router();
 
+let db = await connectToDatabase();
 
 
-router.get('/', (req, res)=>{
-    res.status(200).json(splits)
+
+
+router.get('/', async (req, res)=>{
+    let split_collection= db.collection('splits')
+    let svi_splitovi= await split_collection.find().toArray()
+    res.status(200).json(svi_splitovi)
 })
 
 
 
+ 
+router.post('/', async (req, res)=>{
+    const splits_collection= db.collection('splits')
 
-router.post('', (req, res)=>{
     const split= req.body
 
     const dozvoljeni_kljucevi=['naziv', 'broj_dana', 'opis', 'dani', 'kalendar']
@@ -26,43 +37,76 @@ router.post('', (req, res)=>{
 
     const dozvoljeni_kljucevi_dan=['dan', 'naziv', 'vjezbe']
 
-    const split_kljucevi_dan=Object.keys(split.dani)
+    
+    for (const dan of split.dani) {
+        const kljucevi = Object.keys(dan)
+        const krivi = kljucevi.some(k => !dozvoljeni_kljucevi_dan.includes(k))
 
-    const krivi_kljucevi_dan=split_kljucevi_dan.some(s=> !dozvoljeni_kljucevi_dan.includes(s))
+        if (krivi) {
+            return res.status(400).json({greska: 'krivi oblik dana u splitu'})
+        }
 
-    if(krivi_kljucevi_dan){
-        return res.status(400).json({greska: 'krivi oblik dana u splitu'})
+        if (!Array.isArray(dan.vjezbe)) {
+            return res.status(400).json({greska: 'vjezbe moraju biti array'})
+        }
     }
+
 
     const dozvoljeni_kljucevi_vjezbe=['id', 'broj_setova']
 
-    const split_kljucevi_vjezbe= Object.keys(split.dan.vjezbe)
+    for (const dan of split.dani) {
+        for (const vjezba of dan.vjezbe) {
+            const kljucevi = Object.keys(vjezba);
+            const krivi = kljucevi.some(k => !dozvoljeni_kljucevi_vjezbe.includes(k));
 
-    const krivi_kljucevi_vjezbe=split_kljucevi_vjezbe.some(s=> !dozvoljeni_kljucevi_vjezbe.includes(s))
-
-    if(krivi_kljucevi_vjezbe){
-        return res.status(400).json({greska: 'krivi oblik vjezba u splitu'})
+            if (krivi) {
+                return res.status(400).json({
+                    greska: 'krivi oblik vjezbe u splitu'
+                });
+            }
+        }
     }
 
-    const dozvoljeni_kljucevi_kalendar=['dan', 'split_dan']
+    const dozvoljeni_kljucevi_kalendar=['naziv', 'split_dan_id']
 
-    const split_kljucevi_kalendar=Object.keys(split.kalendar)
-
-    const krivi_kljucevi_kalendar=split_kljucevi_kalendar.some(s=> !dozvoljeni_kljucevi_kalendar.includes(s))
-
-    if(krivi_kljucevi_kalendar){
-        return res.status(400).json({greska: 'krivi oblik kalendara u splitu'})
+    
+    if(typeof split.kalendar !== 'object' || Array.isArray(split.kalendar)) {
+        return res.status(400).json({greska: 'kalendar mora biti objekt'})
     }
 
-    const novi_id=splits.at(-1)['id'] + 1
-    
-    splits.push({
-        id: novi_id,
-        ...split
-    })
+    for (const [datum, vrijednost] of Object.entries(split.kalendar)) {
+        if(typeof vrijednost !== 'object' || Array.isArray(vrijednost)){
+            return res.status(400).json({greska: 'krivi oblik kalendara u splitu'})
+        }
 
-    return res.status(201).json(splits.at(-1))
-    
+        const kljucevi = Object.keys(vrijednost);
+        const krivi = kljucevi.some(k => !dozvoljeni_kljucevi_kalendar.includes(k))
+
+        if(krivi){
+            return res.status(400).json({greska: 'krivi oblik kalendara u splitu'})
+        }
+    }
+
+    if(Object.keys(split.kalendar).length!==14){
+        return res.status(400).json({greska: 'Kalendar mora sadržavati 14 dana'})
+    }
+
+    let rez={}
+    try{
+
+        const postoji= await splits_collection.findOne({naziv: split.naziv})
+
+        if(postoji){
+            return res.status(400).json({error: 'Split kojeg pokušavate stvoriti već posoji'})
+        }
+        
+        rez= await splits_collection.insertOne(split)
+
+        return res.status(201).json(rez.insertedId)
+    } catch(error){
+        console.log(error.errorResponse)
+        return res.status(400).json({error: error.errorResponse})
+    }
 })
 
 
