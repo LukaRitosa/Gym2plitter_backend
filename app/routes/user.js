@@ -2,6 +2,8 @@ import express from 'express';
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
 
 import { connectToDatabase } from '../db.js';
+import { nadiKorisnika } from '../middleware/middleware.js';
+import { checkPassword, generateJWT, hashPassword } from '../auth.js';
 
 
 
@@ -17,11 +19,14 @@ router.get('/', async (req, res) => {
 
 
  
-router.post('/', async (req, res)=>{
-    const user_collection= db.collection('users')
+router.post('/registracija', [nadiKorisnika], async (req, res)=>{
     const novi_user= req.body
 
-    const obavezni_kljucevi= ['username', 'email', 'prehrana']
+    if(req.user){
+        return res.status(400).json({greska: 'korisnik već postoji'})
+    }
+
+    const obavezni_kljucevi= ['username', 'email', 'prehrana', 'lozinka']
 
     if(!obavezni_kljucevi.every(k => k in novi_user)){
         return res.status(400).json({error: 'Krivi oblik korisnika'})
@@ -31,22 +36,51 @@ router.post('/', async (req, res)=>{
         return res.status(400).json({error: 'Krivi oblik prehrane'})
     }
 
+
+    const user_collection= db.collection('users')
+
+    let hash_lozinka= await hashPassword(novi_user.lozinka, 10)
+
+    if(!hash_lozinka){
+        return res.status(500).json({greska: `Greška pri hashiranju lozinke`})
+    }
+
+    novi_user.lozinka= hash_lozinka
+
     let rez={}
 
     try{
-        const postoji= await user_collection.findOne({email: novi_user.email})
-
-        if(postoji){
-            return res.status(400).json({error: 'Korisnik kojeg pokušavate stvoriti već posoji'})
-        }
 
         rez= await user_collection.insertOne(novi_user)
 
         return res.status(201).json(rez.insertedId)
     } catch (error) {
         console.log(error.errorResponse)
-        return res.status(400).json({error: error.errorResponse})
+        return res.status(400).json({error: `Desila se greška: ${error}`})
     }
+})
+
+router.post('/prijava', [nadiKorisnika], async (req, res)=>{
+    const { lozinka }= req.body
+
+    if(!req.user){
+        return res.status(400).json({greska: 'korisnik ne postoji'})
+    }
+
+    const lozinka_postoji= await checkPassword(lozinka, req.user.lozinka)
+
+    let jwt_payload={
+        username: req.user.username,
+        email: req.user.email,
+        _id: req.user._id
+    }
+
+    let jwt_token= await generateJWT(jwt_payload)
+
+    if(lozinka_postoji){
+        return res.status(200).json({message: 'Uspješna autentifikacija', jwt_token: jwt_token})
+    }
+    return res.status(400).send('Greška prilikom prijave')    
 })
 
 router.get('/:id/splits', (req, res)=>{

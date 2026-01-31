@@ -7,6 +7,7 @@ import hranaRouter from './routes/hrana.js'
 import obrokRouter from './routes/obrok.js'
 
 
+
 let port = 3000
 let app= express()
 
@@ -28,4 +29,4 @@ app.listen(port, (error)=>{
     }
 })
 
-console.log(app)
+
