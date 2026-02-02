@@ -34,3 +34,15 @@ export async function generateJWT(payload){
         return false;
     }
 }
+
+
+
+export async function verifyJWT(token){
+    try{
+        let decoded= jwt.verify(token, JWT_SECRET, { expiresIn: '6h' })
+        return decoded
+    } catch(error){
+        console.error(`Došlo je do greške prilikom verifikacije JWT tokena: ${err}`);
+        return null;
+    }
+}

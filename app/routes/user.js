@@ -2,9 +2,9 @@ import express from 'express';
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
 
 import { connectToDatabase } from '../db.js';
-import { nadiKorisnika } from '../middleware/middleware.js';
+import { idKorisnika, nadiKorisnika, sviSplitovi, validirajSplit } from '../middleware/middleware.js';
 import { checkPassword, generateJWT, hashPassword } from '../auth.js';
-
+import { ObjectId } from 'mongodb'
 
 
 const router = express.Router();
@@ -83,6 +83,72 @@ router.post('/prijava', [nadiKorisnika], async (req, res)=>{
     return res.status(400).send('Greška prilikom prijave')    
 })
 
+router.post('/custom_split', [validirajSplit, idKorisnika], async (req, res)=>{
+    const splits_collection= db.collection('customSplits')
+
+    const novi_split=req.body
+
+    if(!req.user){
+        return res.status(401).json({greska: 'niste autorizirani za stvaranje custom splita'})
+    }
+
+    const korisnik_id= req.user._id
+
+
+    let rez={}
+    try{
+        const postoji= await splits_collection.findOne({naziv: novi_split.naziv, id_korisnik: req.user._id})
+
+        if(postoji){
+            return res.status(400).json({error: 'Split kojeg pokušavate stvoriti već posoji'})
+        }
+        
+        rez= await splits_collection.insertOne({id_korisnik: korisnik_id, ...novi_split})
+
+        return res.status(201).json(rez.insertedId)
+    } catch(error){
+        console.log(error.errorResponse)
+        return res.status(400).json({error: error.errorResponse})
+    }
+})
+
+router.get('/split_biranje', [idKorisnika, sviSplitovi], async (req, res)=>{
+    let svi_splitovi=req.svi_splitovi
+
+    return res.status(200).json(svi_splitovi)
+})
+
+router.post('/user_split/:id', [idKorisnika, sviSplitovi], async (req, res)=>{
+    const split_id=req.params.id
+    
+    const id_user= req.user._id
+
+    const svi_splitovi= req.svi_splitovi
+
+    const split= svi_splitovi.find(s => s._id.toString() === split_id.toString())
+
+    if(!split){
+        return res.status(404).json({greska: 'split koji pokušavate odabrati ne postoji'})
+    }
+
+    const { _id, id_korisnik, ...split_data}= split
+
+    const user_splits= db.collection('userSplits')
+    const users_collection= db.collection('users')
+
+    let rez={}
+    try{
+        rez= await user_splits.insertOne({id_korisnik: new ObjectId(id_user), ...split_data})
+
+        await users_collection.updateOne({_id: id_user}, {$set: {trenutniSplit: rez.insertedId.toString()}})
+
+        return res.status(201).json(rez.insertedId)
+    } catch(error){
+        console.error(error)
+        return res.status(500).json({greska: `greška: ${error}`})
+    }
+})
+
 router.get('/:id/splits', (req, res)=>{
     const id_user= req.params.id
 
@@ -116,40 +182,7 @@ router.get('/:id/split', (req, res)=>{
     return res.status(200).json(split)
 })
 
-router.post('/:id_u/split/:id_s', (req, res)=>{
-    const id_user= Number(req.params.id_u)
-    const split=Number(req.params.id_s)
 
-    const userIndex= users.findIndex(u=> u.id==id_user)
-
-    if(userIndex==-1){
-        return res.status(404).json({greska: `Korisnik s id-em ${id_user} ne postoji`})
-    }
-
-    const splitIndex=splits.findIndex(s=>s.id==split)
-
-    if(splitIndex==-1){
-        return res.status(404).json({greska: `Korisnik s id-em ${id_s} ne postoji`})
-    }
-
-    const novi_split=splits.at(splitIndex)
-
-
-
-    
-    const novi_id=user_splits.at(-1)['id'] + 1
-
-    novi_split.id=novi_id
-       
-
-
-    user_splits.push({...novi_split})
-
-    users.at(userIndex)['user_splitovi'].push(novi_id)
-
-    return res.status(200).json({user: users.at(userIndex), split: user_splits.at(-1)})
-
-})
 
 router.get('/:id/dosupneVjezbe', (req, res)=>{
     const id_user=req.params.id
