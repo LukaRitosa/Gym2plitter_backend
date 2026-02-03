@@ -2,7 +2,7 @@ import express from 'express';
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
 
 import { connectToDatabase } from '../db.js';
-import { idKorisnika, nadiKorisnika, sviSplitovi, validirajSplit } from '../middleware/middleware.js';
+import { idKorisnika, nadiKorisnika, sviSplitovi, trenutniSplit, validirajSplit } from '../middleware/middleware.js';
 import { checkPassword, generateJWT, hashPassword } from '../auth.js';
 import { ObjectId } from 'mongodb'
 
@@ -138,9 +138,9 @@ router.post('/user_split/:id', [idKorisnika, sviSplitovi], async (req, res)=>{
 
     let rez={}
     try{
-        rez= await user_splits.insertOne({id_korisnik: new ObjectId(id_user), ...split_data})
+        rez= await user_splits.insertOne({id_korisnik: id_user.toString(), ...split_data})
 
-        await users_collection.updateOne({_id: id_user}, {$set: {trenutniSplit: rez.insertedId.toString()}})
+        await users_collection.updateOne({_id: new ObjectId(id_user)}, {$set: {trenutniSplit: rez.insertedId.toString()}})
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
@@ -149,23 +149,10 @@ router.post('/user_split/:id', [idKorisnika, sviSplitovi], async (req, res)=>{
     }
 })
 
-router.get('/:id/splits', (req, res)=>{
-    const id_user= req.params.id
+router.get('/trenutni_split', [idKorisnika, trenutniSplit], async (req, res)=>{
+    const trenutni_split= req.trenutni_split
 
-    const user= users.find(u => u.id==id_user)
-
-    if(!user){
-        return res.status(404).json({greska: `Korisnik sa id-em ${id_user} ne postoji`})
-    }
-
-    const splitovi= user_splits.filter(s => user.user_splitovi.includes(s.id))
-
-    if(splitovi.length==0){
-        return res.status(200).json({odgovor: 'Trenutno nema splitova'})
-    }
-
-    return res.status(200).json(splitovi)
-
+    return res.status(200).json(trenutni_split)
 })
 
 router.get('/:id/split', (req, res)=>{

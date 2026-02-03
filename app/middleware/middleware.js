@@ -1,5 +1,6 @@
 import { connectToDatabase } from "../db.js";
 import { verifyJWT } from "../auth.js"
+import { ObjectId } from 'mongodb'
 
 let db= await connectToDatabase()
 
@@ -129,6 +130,26 @@ export const sviSplitovi= async(req, res, next)=>{
     svi_splitovi= [...custom_splitovi, ...split_kolekcija]
 
     req.svi_splitovi= svi_splitovi
+
+    next()
+}
+
+export const trenutniSplit= async(req, res, next)=>{
+    const id_user= req.user._id
+    
+    const users_collection= db.collection('users')
+
+    const korisnik= await users_collection.findOne({_id: new ObjectId(id_user)})
+
+    const user_splits= db.collection('userSplits')
+
+    const trenutni_split= await user_splits.findOne({_id: new ObjectId(korisnik.trenutniSplit)})
+
+    if(!trenutni_split){
+        return res.status(404).json({greska: 'vaš trenutni split ne postoji'})
+    }
+
+    req.trenutni_split= trenutni_split
 
     next()
 }

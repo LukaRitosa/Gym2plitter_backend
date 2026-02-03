@@ -42,7 +42,7 @@ export async function verifyJWT(token){
         let decoded= jwt.verify(token, JWT_SECRET, { expiresIn: '6h' })
         return decoded
     } catch(error){
-        console.error(`Došlo je do greške prilikom verifikacije JWT tokena: ${err}`);
+        console.error(`Došlo je do greške prilikom verifikacije JWT tokena: ${error}`);
         return null;
     }
 }
