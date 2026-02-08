@@ -34,7 +34,7 @@ export const idKorisnika= async (req, res, next)=>{
     }
 
     req.user = decoded
-    next()
+    return next()
 }
 
 
@@ -51,6 +51,12 @@ export const validirajSplit= async (req, res, next)=>{
         return res.status(400).json({greska: 'krivi oblik splita'})
     }
 
+    const nema_obaveznih_kljuceva= dozvoljeni_kljucevi.filter(k => !(k in split))
+
+    if (nema_obaveznih_kljuceva.length > 0) {
+        return res.status(400).json({greska: 'Nedostaju obavezna polja'})
+    }
+
     const dozvoljeni_kljucevi_dan=['dan', 'naziv', 'vjezbe']
 
     
@@ -58,8 +64,14 @@ export const validirajSplit= async (req, res, next)=>{
         const kljucevi = Object.keys(dan)
         const krivi = kljucevi.some(k => !dozvoljeni_kljucevi_dan.includes(k))
 
+        const fali_dan = dozvoljeni_kljucevi_dan.filter(k => !(k in dan))
+
         if (krivi) {
             return res.status(400).json({greska: 'krivi oblik dana u splitu'})
+        }
+
+        if (fali_dan.length > 0) {
+            return res.status(400).json({greska: 'Dan nema obavezna polja'})
         }
 
         if (!Array.isArray(dan.vjezbe)) {
@@ -68,17 +80,22 @@ export const validirajSplit= async (req, res, next)=>{
     }
 
 
+
     const dozvoljeni_kljucevi_vjezbe=['id', 'broj_setova']
 
     for (const dan of split.dani) {
         for (const vjezba of dan.vjezbe) {
             const kljucevi = Object.keys(vjezba);
             const krivi = kljucevi.some(k => !dozvoljeni_kljucevi_vjezbe.includes(k));
+            const fali_vjezbe = dozvoljeni_kljucevi_vjezbe.filter(k => !(k in vjezba))
 
             if (krivi) {
-                return res.status(400).json({
-                    greska: 'krivi oblik vjezbe u splitu'
-                });
+                return res.status(400).json({greska: 'krivi oblik vjezbe u splitu'});
+            }
+
+
+            if (fali_vjezbe.length > 0) {
+                return res.status(400).json({greska: 'Vjezba dan nema obavezna polja'})
             }
         }
     }
@@ -101,10 +118,53 @@ export const validirajSplit= async (req, res, next)=>{
         if(krivi){
             return res.status(400).json({greska: 'krivi oblik kalendara u splitu'})
         }
+        
+        const fali_kalendar = dozvoljeni_kljucevi_kalendar.filter(k => !(k in vrijednost))
+
+        if (fali_kalendar.length > 0) {
+            return res.status(400).json({greska: 'Kalendar dan nema obavezna polja'})
+        }
     }
 
     if(Object.keys(split.kalendar).length!==14){
         return res.status(400).json({greska: 'Kalendar mora sadržavati 14 dana'})
+    }
+
+    return next()
+}
+
+export const validirajVjezbu= async (req, res, next)=>{
+    const nova_vjezba= req.body
+
+    const dozvoljeni_kljucevi=['opis', 'glavni_misic', 'naziv', 'ostali_misici', 'slika']
+
+    const kljucevi= Object.keys(nova_vjezba)
+
+    const krivi_klucevi= kljucevi.some(k=> !dozvoljeni_kljucevi.includes(k))
+
+    if(krivi_klucevi){
+        return res.status(400).json({greska: 'Krivi oblik vježbe'})
+    }
+
+    const nema_obaveznih_kljuceva= dozvoljeni_kljucevi.filter(k => !nova_vjezba[k])
+
+    if (nema_obaveznih_kljuceva.length > 0) {
+        return res.status(400).json({greska: 'Nedostaju obavezna polja'})
+    }
+
+    const svi_misici=[
+        'Prsa',  'Trapez (gornji dio leđa)', 'Lat (najširi mišić leđa)', 
+        'Biceps', 'Triceps', 'Podlaktice', 'Ramena-Bočni dio', 'Ramena-Prednji dio', 'Ramena-Stražnji dio',
+        'Quadriceps (Prednja loža)', 'Hamstring (Stražnja loža)',  'List', 'Gluteus (stražnjica)', 'Trbuh'
+    ]
+
+    const krivi_misic= !svi_misici.includes(nova_vjezba.glavni_misic)
+
+
+    const krivi_misici=nova_vjezba.ostali_misici.some(m=> !svi_misici.includes(m))
+
+    if(krivi_misici || krivi_misic){
+        return res.status(400).json({greska: 'Mišići vježbe nisu dozvoljeni'})
     }
 
     return next()

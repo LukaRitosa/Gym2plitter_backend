@@ -2,7 +2,7 @@ import express from 'express';
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
 
 import { connectToDatabase } from '../db.js';
-import { idKorisnika, nadiKorisnika, sviSplitovi, trenutniSplit, validirajSplit } from '../middleware/middleware.js';
+import { idKorisnika, nadiKorisnika, sviSplitovi, trenutniSplit, validirajSplit, validirajVjezbu } from '../middleware/middleware.js';
 import { checkPassword, generateJWT, hashPassword } from '../auth.js';
 import { ObjectId } from 'mongodb'
 
@@ -155,20 +155,33 @@ router.get('/trenutni_split', [idKorisnika, trenutniSplit], async (req, res)=>{
     return res.status(200).json(trenutni_split)
 })
 
-router.get('/:id/split', (req, res)=>{
-    const id_user= req.params.id
+router.post('/custom_vjezba', [validirajVjezbu, idKorisnika], async (req, res)=>{
+    const vjezbe_collection= db.collection('customVjezbe')
 
-    const user= users.find(u => u.id==id_user)
+    const nova_vjezba= req.body
 
-    if(!user){
-        return res.status(404).json({greska: `Korisnik sa id-em ${id_user} ne postoji`})
+    if(!req.user){
+        return res.status(401).json({greska: 'niste autorizirani za stvaranje custom splita'})
     }
 
-    const split= user_splits.find(s=> s.id==user.trenutniSplit_id)
+    const korisnik_id= req.user._id
 
-    return res.status(200).json(split)
+    let rez={}
+
+    try{
+        rez= await vjezbe_collection.insertOne(
+            {
+                ...nova_vjezba, 
+                id_korisnik: korisnik_id
+            }
+        )
+
+        return res.status(201).json(rez.insertedId)
+    } catch(error){
+        console.log(error)
+        return res.status(400).json({greska: error.message})
+    }
 })
-
 
 
 router.get('/:id/dosupneVjezbe', (req, res)=>{

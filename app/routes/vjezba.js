@@ -1,6 +1,7 @@
 import express from 'express'
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
 import { connectToDatabase } from '../db.js';
+import { validirajVjezbu } from '../middleware/middleware.js';
 
 
 
@@ -17,35 +18,10 @@ router.get('/', async (req, res)=>{
 })
 
 
-router.post('/', async (req, res)=>{
-    const nova_vjezba= req.body
-
-    const dozvoljeni_kljucevi=['Opis', 'glavni_misic', 'naziv', 'ostali_misici', 'slika']
-
-    const kljucevi= Object.keys(nova_vjezba)
-
-    const krivi_klucevi= kljucevi.some(k=> !dozvoljeni_kljucevi.includes(k))
-
-    if(krivi_klucevi){
-        return res.status(400).json({greska: 'Krivi oblik vježbe'})
-    }
-
-    const svi_misici=[
-        'Prsa',  'Trapez (gornji dio leđa)', 'Lat (najširi mišić leđa)', 
-        'Biceps', 'Triceps', 'Podlaktice', 'Ramena-Bočni dio', 'Ramena-Prednji dio', 'Ramena-Stražnji dio',
-        'Quadriceps (Prednja loža)', 'Hamstring (Stražnja loža)',  'List', 'Gluteus (stražnjica)', 'Trbuh'
-    ]
-
-    const krivi_misic= !svi_misici.includes(nova_vjezba.glavni_misic)
-
-
-    const krivi_misici=nova_vjezba.ostali_misici.some(m=> !svi_misici.includes(m))
-
-    if(krivi_misici || krivi_misic){
-        return res.status(400).json({greska: 'Mišići vježbe nisu dozvoljeni'})
-    }
-
+router.post('/', [validirajVjezbu], async (req, res)=>{
     const vjezbe_collection= db.collection('vjezbe')
+
+    const nova_vjezba= req.body
 
     let rez={}
 
