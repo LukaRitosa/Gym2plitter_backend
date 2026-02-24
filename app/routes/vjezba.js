@@ -2,6 +2,8 @@ import express from 'express'
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
 import { connectToDatabase } from '../db.js';
 import { validirajVjezbu } from '../middleware/middleware.js';
+import { body, validationResult } from 'express-validator'
+
 
 
 
@@ -18,7 +20,22 @@ router.get('/', async (req, res)=>{
 })
 
 
-router.post('/', [validirajVjezbu], async (req, res)=>{
+router.post('/', 
+    [
+        body('opis').exists(),
+        body('glavni_misic').exists(),
+        body('ostali_misici').exists(),
+        body('slika').exists(),
+        validirajVjezbu
+    ], 
+async (req, res)=>{
+
+    const errors = validationResult(req)
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() })
+    }
+    
     const vjezbe_collection= db.collection('vjezbe')
 
     const nova_vjezba= req.body

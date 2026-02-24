@@ -1,54 +1,63 @@
 import express from 'express';
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
+
+import { connectToDatabase } from '../db.js';
+import { idKorisnika, nadiKorisnika, sviSplitovi, trenutniSplit, validirajSplit, validirajVjezbu } from '../middleware/middleware.js';
+import { checkPassword, generateJWT, hashPassword } from '../auth.js';
+import { ObjectId } from 'mongodb'
+
+
 const router = express.Router();
 
+let db = await connectToDatabase();
 
 
-router.get('/:id', (req, res)=>{
-    const id_user= req.params.id
 
-    const user= users.find(u => u.id==id_user)
+router.get('/', [idKorisnika, trenutniSplit], async (req, res)=>{
+    const trenutni_split= req.trenutni_split
 
-    if(!user){
-        return res.status(404).json({greska: `Korisnik sa id-em ${id_user} ne postoji`})
-    }
-
-    const split= user_splits.find(s => s.id==user.trenutniSplit_id)
-
-    if(!split){
-        return res.status(200).json({odgovor: 'Korisnik nema aktivan split'})
-    }
-
-    return res.status(200).json(split.kalendar)
+    return res.status(200).json(trenutni_split.kalendar)
 })
 
 
-router.patch('/:id_u/zastarijeli', (req, res)=>{
-    const id_user=req.params.id_u
+router.patch('/', [idKorisnika, trenutniSplit], async (req, res)=>{
+    const trenutni_split= req.trenutni_split
+
     const novi_kalendar=req.body
 
-    const korisnik=users.find(u=> u.id==id_user)
 
-    if(!korisnik){
-        return res.status(404).json({greska: `Korisnik sa id-em ${id_user} ne postoji`})
+    if (!novi_kalendar || typeof novi_kalendar !== 'object' || Array.isArray(novi_kalendar)) {
+        return res.status(400).json({ greska: 'Krivi oblik kalendara' })
     }
 
-    const split= user_splits.find(s => s.id==korisnik.trenutniSplit_id)
+    const datumi = Object.keys(novi_kalendar)
 
-    if(!split){
-        return res.status(200).json({odgovor: 'Korisnik trenutno nema odabran split'})
+    if (datumi.length < 14) {
+        return res.status(400).json({ greska: 'Kalendar mora imati najmanje 14 dana' })
     }
 
-    if(novi_kalendar.length<14){
-        return res.status(400).json({greska: 'Krivi oblik kalendara'})
+    datumi.sort()
+
+    const danas = new Date().toISOString().split('T')[0]
+
+    if (datumi[0] !== danas) {
+        return res.status(400).json({ greska: 'Prvi datum mora biti današnji' })
     }
 
+    const user_splits= db.collection('userSplits')
 
-    const splitIndex=splits.findIndex(s=>s.id==split.id)
 
-    splits.at(splitIndex).kalendar=novi_kalendar
+    let rez={}
 
-    return res.status(200).json(splits.at(splitIndex))
+    try{
+
+        rez= await user_splits.updateOne({_id: new ObjectId(trenutni_split._id)}, {$set: {kalendar: novi_kalendar}})
+
+        return res.status(200).json(rez)
+    } catch(error){
+        console.error(error)
+        return res.status(500).json({greska: 'desila se greška u sustavu'})
+    }
 })
 
 
