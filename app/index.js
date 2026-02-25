@@ -5,6 +5,7 @@ import kalendarRouter from './routes/kalendar.js'
 import vjezbaRouter from './routes/vjezba.js'
 import hranaRouter from './routes/hrana.js'
 import obrokRouter from './routes/obrok.js'
+import splitDanRouter from './routes/split_dan.js'
 
 
 
@@ -18,6 +19,7 @@ app.use('/kalendar', kalendarRouter)
 app.use('/vjezbe', vjezbaRouter)
 app.use('/hrana', hranaRouter)
 app.use('/obrok', obrokRouter)
+app.use('/split_dan', splitDanRouter)
 
 
 app.listen(port, (error)=>{

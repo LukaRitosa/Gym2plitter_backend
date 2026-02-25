@@ -213,3 +213,28 @@ export const trenutniSplit= async(req, res, next)=>{
 
     next()
 }
+
+
+export const sveVjezbe= async(req, res, next)=>{
+    let sve_vjezbe=[]
+
+    const vjezbe_collection= db.collection('vjezbe')
+
+    const custom_vjezbe_collection= db.collection('customVjezbe')
+
+    if(!req.user){
+        return res.status(401).json({greska: 'Nemate autorizaciju za pregled splitova'})
+    }
+
+    const korisnik_id=req.user._id
+
+    const custom_vjezbe= await custom_vjezbe_collection.find({id_korisnik: korisnik_id}).toArray()
+
+    const vjezbe_kolekcija= await vjezbe_collection.find().toArray()
+
+    sve_vjezbe= [...custom_vjezbe, ...vjezbe_kolekcija]
+
+    req.sve_vjezbe= sve_vjezbe
+
+    next()
+}
