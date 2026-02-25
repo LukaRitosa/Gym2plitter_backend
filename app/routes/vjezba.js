@@ -3,6 +3,7 @@ import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.
 import { connectToDatabase } from '../db.js';
 import { validirajVjezbu, idKorisnika, sveVjezbe  } from '../middleware/middleware.js';
 import { body, validationResult } from 'express-validator'
+import { ObjectId } from 'mongodb';
 
 
 
@@ -91,6 +92,20 @@ router.get('/biranje', [idKorisnika, sveVjezbe], async (req, res)=>{
     let sve_vjezbe=req.sve_vjezbe
 
     return res.status(200).json(sve_vjezbe)
+}) 
+
+router.get('/:id', [idKorisnika, sveVjezbe], async (req, res)=>{
+    let sve_vjezbe=req.sve_vjezbe
+
+    const id_vjezba= req.params.id
+
+    const vjezba= sve_vjezbe.find(v=> v._id.toString()=== id_vjezba)
+
+    if(!vjezba){
+        return res.status(404).json({greska: 'Vježba koju trežite ne postoji'})
+    }
+
+    return res.status(200).json(vjezba)
 }) 
 
 export default router

@@ -76,7 +76,7 @@ router.post('/user_split/:id', [idKorisnika, sviSplitovi], async (req, res)=>{
     }
 })
 
-router.get('/trenutni_split', [idKorisnika, trenutniSplit], async (req, res)=>{
+router.get('/trenutni', [idKorisnika, trenutniSplit], async (req, res)=>{
     const trenutni_split= req.trenutni_split
 
     return res.status(200).json(trenutni_split)

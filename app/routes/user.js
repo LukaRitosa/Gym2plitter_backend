@@ -86,6 +86,56 @@ router.post('/prijava', [nadiKorisnika], async (req, res)=>{
 
 
 
+router.patch('/test', [idKorisnika], async (req, res)=>{
+    const id_user= req.user._id
+
+    const user_collection= db.collection('users')
+
+    const { slobodni_dani } = req.body
+
+    const dozvoljeni_dani = [
+        'ponedjeljak', 'utorak', 'srijeda',
+        'četvrtak', 'petak', 'subota', 'nedjelja'
+    ]
+
+    if (!Array.isArray(slobodni_dani)) {
+        return res.status(400).json({ greska: 'Slobodni dani moraju biti array' })
+    }
+
+    const krivi_kljucevi= slobodni_dani.some(d=> !dozvoljeni_dani.includes(d))
+
+    if (krivi_kljucevi) {
+        return res.status(400).json({ greska: 'Neispravan dan u tjednu' })
+    }
+    
+    let rez={}
+
+    try{
+        rez= await user_collection.updateOne(
+            {
+                _id: new ObjectId(id_user)
+            }, 
+            {
+                $set:{
+                    slobodni_dani: slobodni_dani,
+                    slobodnoVrijeme: `${slobodni_dani.length} ${slobodni_dani.length === 1 ? 'dan' : 'dana'}`
+                }
+            }
+        )
+
+        if (rez.matchedCount === 0) {
+            return res.status(404).json({ greska: 'Korisnik ne postoji' })
+        }
+
+        return res.status(200).json({ poruka: 'Uspješno ažurirano' })
+
+    }catch(error){
+        console.error(error)
+        return res.status(500).json({greska: error})
+    }
+})
+
+
 router.get('/:id/dosupneVjezbe', (req, res)=>{
     const id_user=req.params.id
 
