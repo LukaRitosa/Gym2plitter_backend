@@ -1,7 +1,8 @@
 import express from 'express';
 import { splits } from '../data/data.js'
 import { connectToDatabase } from '../db.js';
-import { validirajSplit, idKorisnika, sviSplitovi, trenutniSplit } from '../middleware/middleware.js';
+import { idKorisnika } from '../middleware/middleware.js';
+import { validirajSplit, sviSplitovi, trenutniSplit } from '../middleware/split_middlewade.js';
 import { ObjectId } from 'mongodb'
 
 
@@ -40,8 +41,8 @@ router.post('/', [validirajSplit], async (req, res)=>{
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.log(error.errorResponse)
-        return res.status(400).json({error: error.errorResponse})
+        console.log(error)
+        return res.status(400).json({greska: error})
     }
 })
 
@@ -70,6 +71,32 @@ router.post('/user_split/:id', [idKorisnika, sviSplitovi], async (req, res)=>{
         await users_collection.updateOne({_id: new ObjectId(id_user)}, {$set: {trenutniSplit: rez.insertedId.toString()}})
 
         return res.status(201).json(rez.insertedId)
+    } catch(error){
+        console.error(error)
+        return res.status(500).json({greska: `greška: ${error}`})
+    }
+})
+
+router.delete('/user_split/:id', [idKorisnika], async (req, res)=>{
+    const split_id=req.params.id
+    const id_user= req.user._id
+
+
+    const user_splits= db.collection('userSplits')
+    const users_collection= db.collection('users')    
+    
+    try{
+        const split= await user_splits.findOne({ _id: new ObjectId(split_id), id_korisnik: id_user })
+
+        if(!split){
+            return res.status(404).json({greska: 'Pokušavate obrisati split koji ne postoji'})
+        }
+    
+        await user_splits.deleteOne({_id: new ObjectId(split_id)})
+
+        await users_collection.updateOne({_id: new ObjectId(id_user)}, {$set: {trenutniSplit: null}})
+
+        return res.status(200).json({poruka: 'Split uspješno obrisan'})
     } catch(error){
         console.error(error)
         return res.status(500).json({greska: `greška: ${error}`})
@@ -113,8 +140,8 @@ router.post('/custom', [validirajSplit, idKorisnika], async (req, res)=>{
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.log(error.errorResponse)
-        return res.status(400).json({error: error.errorResponse})
+        console.log(error)
+        return res.status(500).json({greska: error})
     }
 })
 

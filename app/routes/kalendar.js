@@ -2,7 +2,8 @@ import express from 'express';
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
 
 import { connectToDatabase } from '../db.js';
-import { idKorisnika, nadiKorisnika, sviSplitovi, trenutniSplit, validirajSplit, validirajVjezbu } from '../middleware/middleware.js';
+import { idKorisnika, nadiKorisnika } from '../middleware/middleware.js';
+import { trenutniSplit } from '../middleware/split_middlewade.js';
 import { checkPassword, generateJWT, hashPassword } from '../auth.js';
 import { ObjectId } from 'mongodb'
 

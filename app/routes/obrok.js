@@ -1,5 +1,7 @@
 import express from 'express';
 import { connectToDatabase } from '../db.js';
+import { idKorisnika } from '../middleware/middleware.js';
+import { obrokValidacija, sviObroci } from '../middleware/obrok_middleware.js';
 
 
 
@@ -12,22 +14,18 @@ let db = await connectToDatabase();
 
 router.get('/', async (req, res)=>{
     const obrok_collection= db.collection('obroci')
-    const svi_obroci= await obrok_collection.find().toArray()
-    res.status(200).json(svi_obroci)
+    const obroci= await obrok_collection.find().toArray()
+    res.status(200).json(obroci)
 })
 
-router.post('/', async (req, res)=>{
+router.get('/biranje', [idKorisnika, sviObroci], async (req, res)=>{
+    const svi_obroci= req.svi_obroci
+
+    return res.status(200).json(svi_obroci)
+})
+
+router.post('/', [obrokValidacija], async (req, res)=>{
     const novi_obrok= req.body
-
-    const dozvoljeni_kljucevi=['naziv', 'opis', 'kalorije', 'proteini', 'grami', 'sastojci']
-
-    const obrok_kljucevi= Object.keys(novi_obrok)
-
-    const krivi_kljucevi= obrok_kljucevi.some(o => !dozvoljeni_kljucevi.includes(o))
-
-    if(krivi_kljucevi){
-        return res.status(400).json({greska: 'Krivi oblik obroka'})
-    }
 
     const obrok_collection= db.collection('obroci')
 
@@ -49,31 +47,23 @@ router.post('/', async (req, res)=>{
     }
 })
 
-router.post('/custom', async (req, res)=>{
+router.post('/custom', [idKorisnika, obrokValidacija], async (req, res)=>{
     const novi_obrok= req.body
 
-    const dozvoljeni_kljucevi=['naziv', 'opis', 'kalorije', 'proteini', 'grami', 'sastojci']
+    const id_korisnik= req.user._id
 
-    const obrok_kljucevi= Object.keys(novi_obrok)
-
-    const krivi_kljucevi= obrok_kljucevi.some(o => !dozvoljeni_kljucevi.includes(o))
-
-    if(krivi_kljucevi){
-        return res.status(400).json({greska: 'Krivi oblik obroka'})
-    }
-
-    const obrok_collection= db.collection('obroci')
+    const obrok_collection= db.collection('customObroci')
 
     let rez={}
 
     try{
-        const postoji= await obrok_collection.findOne({naziv: novi_obrok.naziv})
+        const postoji= await obrok_collection.findOne({naziv: novi_obrok.naziv, id_korisnik: id_korisnik})
 
         if(postoji){
             return res.status(400).json({greska: 'Obrok koji pokušavate stvoriti već postoji'})
         }
-
-        rez= await obrok_collection.insertOne(novi_obrok)
+        
+        rez= await obrok_collection.insertOne({...novi_obrok, id_korisnik: id_korisnik})
 
         return res.status(201).json(rez.insertedId)
     } catch(error){

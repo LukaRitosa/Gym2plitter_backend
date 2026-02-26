@@ -2,7 +2,7 @@ import express from 'express';
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
 
 import { connectToDatabase } from '../db.js';
-import { idKorisnika, nadiKorisnika, sviSplitovi, trenutniSplit, validirajSplit, validirajVjezbu } from '../middleware/middleware.js';
+import { idKorisnika, nadiKorisnika } from '../middleware/middleware.js';
 import { checkPassword, generateJWT, hashPassword } from '../auth.js';
 import { ObjectId } from 'mongodb'
 
@@ -32,7 +32,7 @@ router.post('/registracija', [nadiKorisnika], async (req, res)=>{
         return res.status(400).json({error: 'Krivi oblik korisnika'})
     }
 
-    if(!Array.isArray(novi_user.prehrana) || !novi_user.prehrana.length===7){
+    if(!Array.isArray(novi_user.prehrana) || novi_user.prehrana.length!==7){
         return res.status(400).json({error: 'Krivi oblik prehrane'})
     }
 
@@ -63,11 +63,15 @@ router.post('/registracija', [nadiKorisnika], async (req, res)=>{
 router.post('/prijava', [nadiKorisnika], async (req, res)=>{
     const { lozinka }= req.body
 
-    if(!req.user){
-        return res.status(400).json({greska: 'korisnik ne postoji'})
+    if (!req.user) {
+        return res.status(400).json({ greska: 'Greška prilikom prijave' })
     }
 
     const lozinka_postoji= await checkPassword(lozinka, req.user.lozinka)
+
+    if(!lozinka_postoji){
+        return res.status(401).send('Greška prilikom prijave')  
+    }
 
     let jwt_payload={
         username: req.user.username,
@@ -77,10 +81,7 @@ router.post('/prijava', [nadiKorisnika], async (req, res)=>{
 
     let jwt_token= await generateJWT(jwt_payload)
 
-    if(lozinka_postoji){
-        return res.status(200).json({message: 'Uspješna autentifikacija', jwt_token: jwt_token})
-    }
-    return res.status(400).send('Greška prilikom prijave')    
+    return res.status(200).json({message: 'Uspješna autentifikacija', jwt_token: jwt_token})  
 })
 
 
@@ -123,10 +124,6 @@ router.patch('/test', [idKorisnika], async (req, res)=>{
             }
         )
 
-        if (rez.matchedCount === 0) {
-            return res.status(404).json({ greska: 'Korisnik ne postoji' })
-        }
-
         return res.status(200).json({ poruka: 'Uspješno ažurirano' })
 
     }catch(error){
@@ -135,113 +132,79 @@ router.patch('/test', [idKorisnika], async (req, res)=>{
     }
 })
 
+router.get('/profil', [idKorisnika], async (req, res)=>{
+    const id_korisnik= req.user._id
 
-router.get('/:id/dosupneVjezbe', (req, res)=>{
-    const id_user=req.params.id
+    const user_collection= db.collection('users')
 
-    const postoji=users.find(u=>u.id==id_user)
+    try{
+        const korisnik= await user_collection.findOne({_id: new ObjectId(id_korisnik)})
 
-    if(!postoji){
-        return res.status(404).json({greska: `Korisnik sa id-em ${id_user} ne postoji`})
+        return res.status(200).json(korisnik)
+    }catch(error){
+        console.error(error)
+        return res.status(500).json({greska: error})
     }
-
-    const dostupne_vjezbe=[
-        ...vjezbe,
-        ...custom_vjezbe.filter(v=>v.id_usera==id_user)
-    ]
-
-    return res.status(200).json({'Dostupne vježbe:': dostupne_vjezbe})
-})
-
-router.post('/:id/vjezba', (req, res)=>{
-    const id_user=Number(req.params.id)
-    const nova_vjezba= req.body
-
-    const index=users.findIndex(u=>u.id==id_user)
-
-    if(index==-1){
-        return res.status(404).json({greska: `Korisnik sa id-em ${id_user} ne postoji`})
-    }
-
-    const dozvoljeni_kljucevi=['naziv', 'opis', 'glavni_misic', 'ostali_misici']
-
-    const kljucevi=Object.keys(nova_vjezba)
-    const krivi_kljucevi=kljucevi.some(k=> !dozvoljeni_kljucevi.includes(k))
-
-    if(krivi_kljucevi){
-        return res.status(400).json({greska: 'Krivi oblik vježbe'})
-    }
-
-    const svi_misici=[
-        'Prsa',  'Trapez (gornji dio leđa)', 'Lat (najširi mišić leđa)', 
-        'Biceps', 'Triceps', 'Podlaktice', 'Ramena-Bočni dio', 'Ramena-Prednji dio', 'Ramena-Stražnji dio',
-        'Quadriceps (Prednja loža)', 'Hamstring (Stražnja loža)',  'List', 'Gluteus (stražnjica)', 'Trbuh'
-    ]
-
-
-    const krivi_misic= !svi_misici.includes(nova_vjezba.glavni_misic)
-
-    const krivi_misici=nova_vjezba.ostali_misici.some(m=> !svi_misici.includes(m))
-
-    if(krivi_misici || krivi_misic){
-        return res.status(400).json({greska: 'Mišići vježbe nisu dozvoljeni'})
-    }
-
-    const novi_id=custom_vjezbe.at(-1)['id'] + 1
-
-    custom_vjezbe.push({
-        id: novi_id,
-        id_usera: id_user,
-        ...nova_vjezba
-    })
-
-    users.at(index).custom_vjezbe.push(novi_id)
-
-    return res.status(201).json({
-        user:users.at(index), 
-        vjezba: custom_vjezbe.at(-1)
-    })
-
-
 })
 
 
-router.get('/:id/dan/:split_dan', (req, res)=>{
-    const id_korisnik=req.params.id
+router.patch('/kalkulator', [idKorisnika], async (req, res)=>{
+    let { tezina, visina, dob, sex, cilj } = req.body
+    const id_korisnik= req.user._id
 
-    const id_dan=req.params.split_dan
-
-    const korisnik= users.find(k=> k.id==id_korisnik)
-
-    if(!korisnik){
-        return res.status(404).json({greska: `Korisnik s id-em ${id_korisnik} ne postoji`})
+    if (!tezina || !visina || !dob || !sex || !cilj) {
+        return res.status(400).json({ greska: 'Sva polja su obavezna' })
     }
 
-    const split= user_splits.find(s=> s.id==korisnik.trenutniSplit_id)
-
-    const dan=split.dani.find(d=>d.dan == id_dan)
-
-    if(dan.length==0){
-        return res.status(404).json({greska: `U trenutnom splitu ne postoji dan ${id_dan}`})
+    if (!['m', 'f'].includes(sex) || !['mršavljanje', 'održavanje', 'povećanje mase'].includes(cilj)) {
+        return res.status(400).json({ greska: 'Neispravni podatci' })
     }
 
-    const vjezbe_dan=dan.vjezbe
+    let bmr
 
-    if(vjezbe_dan.length==0){
-        return res.status(200).json(dan)
+    if(sex==='m'){
+        bmr= 10 * tezina + 6.25 * visina - 5 * dob + 5
+    } else{
+        bmr= 10 * tezina + 6.25 * visina - 5 * dob - 161 
     }
 
-    const detaljne_vjezbe = vjezbe_dan.map(vj => {
-        const vjezba = vjezbe.find(v => v.id == vj.id);
-        return {
-            ...vjezba,
-            broj_setova: vj.broj_setova
-        };
-    });
+    let kcal= bmr * 1.4
 
-    dan.vjezbe=detaljne_vjezbe
+    if(cilj='mršavljanje'){
+        kcal-= 400
+    }
+    if(cilj==='povećanje mase'){
+        kcal+= 300
+    }
 
-    return res.status(200).json(dan)
+    const cilj_kalorije= Math.round(kcal)
+    const cilj_proteini= Math.round(tezina*2)
+
+    const user_collection= db.collection('users')
+
+    let rez={}
+    try{
+        rez= await user_collection.updateOne(
+            {_id: new ObjectId(id_korisnik)},
+            {
+                $set:{
+                    tezina: tezina,
+                    visina: visina,
+                    dob: dob,
+                    sex: sex,
+                    cilj: cilj,
+                    cilj_kalorije: cilj_kalorije,
+                    cilj_proteini: cilj_proteini
+                }
+            }
+        )
+    return res.status(200).json({ poruka: 'Uspješno ažurirano' })
+
+    }catch(error){
+        console.error(error)
+        return res.status(500).json({greska: error})
+    }
+
 })
 
 

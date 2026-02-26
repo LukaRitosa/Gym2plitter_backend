@@ -1,7 +1,8 @@
 import express from 'express'
 import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
 import { connectToDatabase } from '../db.js';
-import { validirajVjezbu, idKorisnika, sveVjezbe  } from '../middleware/middleware.js';
+import { idKorisnika } from '../middleware/middleware.js';
+import { validirajVjezbu, sveVjezbe } from '../middleware/vjezba_middleware.js';
 import { body, validationResult } from 'express-validator'
 import { ObjectId } from 'mongodb';
 
@@ -74,12 +75,7 @@ router.post('/custom', [validirajVjezbu, idKorisnika], async (req, res)=>{
     let rez={}
 
     try{
-        rez= await vjezbe_collection.insertOne(
-            {
-                ...nova_vjezba, 
-                id_korisnik: korisnik_id
-            }
-        )
+        rez= await vjezbe_collection.insertOne({...nova_vjezba, id_korisnik: korisnik_id})
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
