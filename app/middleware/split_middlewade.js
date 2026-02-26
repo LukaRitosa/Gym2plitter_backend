@@ -120,7 +120,7 @@ export const sviSplitovi= async(req, res, next)=>{
 
     req.svi_splitovi= svi_splitovi
 
-    next()
+    return next()
 }
 
 export const trenutniSplit= async(req, res, next)=>{
@@ -140,5 +140,21 @@ export const trenutniSplit= async(req, res, next)=>{
 
     req.trenutni_split= trenutni_split
 
-    next()
+    return next()
+}
+
+export const pronadeniDan= async(req, res, next)=>{
+    const dani= req.trenutni_split.dani
+
+    const id_dan= Number(req.params.id_dan)
+
+    const dan= dani.find(d=> d.dan=== id_dan)
+
+    if(!dan){
+        return res.status(404).json({greska: 'Dan koji tražite ne postoji u ovom splitu'})
+    }
+
+    req.dan= dan
+
+    return next()
 }
