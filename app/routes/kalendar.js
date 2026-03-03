@@ -54,7 +54,7 @@ router.patch('/', [idKorisnika, trenutniSplit], async (req, res)=>{
 
         rez= await user_splits.updateOne({_id: new ObjectId(trenutni_split._id)}, {$set: {kalendar: novi_kalendar}})
 
-        return res.status(200).json(rez)
+        return res.status(200).json({poruka: 'Kalendar ažuriran'})
     } catch(error){
         console.error(error)
         return res.status(500).json({greska: 'desila se greška u sustavu'})

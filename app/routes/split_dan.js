@@ -19,10 +19,27 @@ router.get('/', [idKorisnika, trenutniSplit], async (req, res)=>{
     return res.status(200).json(dani)
 })
 
-router.get('/:id_dan', [idKorisnika, trenutniSplit, pronadeniDan], async (req, res)=>{
+router.get('/:id_dan', [idKorisnika, trenutniSplit, pronadeniDan, sveVjezbe], async (req, res)=>{
     const dan= req.dan
+    const sve_vjezbe= req.sve_vjezbe
 
-    return res.status(200).json(dan)
+    const vjezbe= dan.vjezbe.map(v=>{
+        const postoji= sve_vjezbe.find(vj => vj._id.toString()===v.id.toString())
+        
+        if (postoji) {
+            return {
+                ...postoji,
+                brojSetova: v.broj_setova 
+            }
+        } else {
+            return {
+                id: v.id,
+                brojSetova: v.broj_setova 
+            }
+        }
+    })
+
+    return res.status(200).json({ ...dan, vjezbe: vjezbe})
 })
 
 
@@ -104,6 +121,61 @@ router.patch('/:id_dan/ukloni_vjezbu/:id_vjezba', [idKorisnika, trenutniSplit, p
 })
 
 
-router.patch('/:id_dan/novi_setovi/:id_vjezba', [idKorisnika, trenutniSplit, pronadeniDan], async (req, res)=>{})
+router.put('/:id_dan/novi_setovi', [idKorisnika, trenutniSplit, pronadeniDan], async (req, res)=>{
+    const id_split= req.trenutni_split._id
+
+    const id_dan= Number(req.params.id_dan)
+
+    const { vjezbe }= req.body
+
+    if(!Array.isArray(vjezbe)){
+        return res.status(400).json({greska: 'Nesipravni podatci'})
+    }
+
+    const stareVjezbe= req.dan.vjezbe
+
+    const user_split_collection= db.collection('userSplits')
+
+    try{
+
+        for(const promjena of vjezbe){
+            const postoji= stareVjezbe.find(v => v.id===promjena.id)
+
+            if(!postoji){
+                return res.status(400).json({greska: 'Vježba ne postoji u danu'})
+            }
+
+            if(!promjena.id || typeof promjena.broj_setova !== 'number' || promjena.broj_setova < 1){
+                return res.status(400).json({greska: 'Nesipravan set'})
+            }
+        }
+
+        const noveVjezbe= stareVjezbe.map(stara=>{
+            const promjena= vjezbe.find(v => v.id===stara.id)
+
+            if(!promjena) return stara
+
+            return{
+                ...stara,
+                broj_setova: promjena.broj_setova
+            }
+        })
+        await user_split_collection.updateOne(
+            {
+                _id: new ObjectId(id_split),
+                "dani.dan": id_dan
+            },
+            {
+                $set: { "dani.$.vjezbe": noveVjezbe }
+            }
+        )
+
+        return res.status(200).json({poruka: 'Setovi uspješno ažurirani'})
+    }catch(error){
+        console.error(error)
+        return res.status(500).json({greska: error})
+    }
+
+})
 
 export default router

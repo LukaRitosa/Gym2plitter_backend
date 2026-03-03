@@ -170,7 +170,7 @@ router.patch('/kalkulator', [idKorisnika], async (req, res)=>{
 
     let kcal= bmr * 1.4
 
-    if(cilj='mršavljanje'){
+    if(cilj==='mršavljanje'){
         kcal-= 400
     }
     if(cilj==='povećanje mase'){
