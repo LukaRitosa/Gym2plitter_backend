@@ -20,36 +20,74 @@ router.get('/', async (req, res) => {
 
  
 router.post('/registracija', [nadiKorisnika], async (req, res)=>{
-    const novi_user= req.body
+    const {username, email, lozinka}= req.body
 
     if(req.user){
         return res.status(400).json({greska: 'korisnik već postoji'})
     }
 
-    const obavezni_kljucevi= ['username', 'email', 'prehrana', 'lozinka']
-
-    if(!obavezni_kljucevi.every(k => k in novi_user)){
-        return res.status(400).json({error: 'Krivi oblik korisnika'})
+    if(!username || !email || !lozinka){
+        return res.status(400).json({error: 'Nedostaju obavezni ključevi'})
     }
 
-    if(!Array.isArray(novi_user.prehrana) || novi_user.prehrana.length!==7){
-        return res.status(400).json({error: 'Krivi oblik prehrane'})
+    if(lozinka.length<6){
+        return res.status(400).json({error: 'Lozinka mora biti duga barem 6 znakova'})
     }
 
 
     const user_collection= db.collection('users')
 
-    let hash_lozinka= await hashPassword(novi_user.lozinka, 10)
+    let hash_lozinka= await hashPassword(lozinka, 10)
 
     if(!hash_lozinka){
         return res.status(500).json({greska: `Greška pri hashiranju lozinke`})
     }
 
-    novi_user.lozinka= hash_lozinka
+    function prazan_dan(datum){
+        return{
+            datum: datum,
+            ostvareneKalorije: 0,
+            ostvareniProteini: 0,
+            pojedeno: {
+                marenda: [],
+                rucak: [],
+                vecera: [],
+                snack: [],
+                nekarakterizirano: []
+            }
+        }
+    }
+
+    let prehrana= []
+    let danas= new Date()
 
     let rez={}
 
     try{
+
+        for(let i=6; i>=0; i--){
+            let d= new Date()
+            d.setDate(danas.getDate()-i)
+            let datum= d.toLocaleDateString("sv-SE")
+            prehrana.push(prazan_dan(datum))
+        }
+
+        const novi_user= {
+            username: username,
+            email: email,
+            lozinka: hash_lozinka,
+            sex: null,
+            dob: null,
+            visina: null,
+            tezina: null,
+            cilj: null,
+            cilj_kalorije: null,
+            cilj_proteini: null,
+            slobodnoVrijeme: null,
+            slobodni_dani: [],
+            trenutniSplit: null,
+            prehrana: prehrana,
+        }
 
         rez= await user_collection.insertOne(novi_user)
 

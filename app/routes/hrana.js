@@ -38,7 +38,7 @@ router.post('/', [hranaValidacija], async (req, res)=>{
             return res.status(400).json({greska: 'Hrana koju pokušavate stvoriti već postoji'})
         }
 
-        rez= await hrana_collection.insertOne(nova_hrana)
+        rez= await hrana_collection.insertOne({...nova_hrana, grami: 100})
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
@@ -63,7 +63,7 @@ router.post('/custom', [ idKorisnika, hranaValidacija], async (req, res)=>{
             return res.status(400).json({greska: 'Obrok koji pokušavate stvoriti već postoji'})
         }
         
-        rez= await hrana_collection.insertOne({...nova_hrana, id_korisnik: id_korisnik})
+        rez= await hrana_collection.insertOne({...nova_hrana, id_korisnik: id_korisnik, grami: 100})
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
