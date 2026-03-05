@@ -64,5 +64,5 @@ export const sveVjezbe= async(req, res, next)=>{
 
     req.sve_vjezbe= sve_vjezbe
 
-    next()
+    return next()
 }

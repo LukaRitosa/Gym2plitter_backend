@@ -7,7 +7,7 @@ let db= await connectToDatabase()
 export const validirajSplit= async (req, res, next)=>{
     const split= req.body
 
-    const dozvoljeni_kljucevi=['naziv', 'broj_dana', 'opis', 'dani', 'kalendar']
+    const dozvoljeni_kljucevi=['naziv', 'broj_dana', 'opis', 'dani']
 
     const split_kljucevi=Object.keys(split)
 
@@ -21,6 +21,26 @@ export const validirajSplit= async (req, res, next)=>{
 
     if (nema_obaveznih_kljuceva.length > 0) {
         return res.status(400).json({greska: 'Nedostaju obavezna polja'})
+    }
+
+    if (typeof split.naziv !== 'string') {
+        return res.status(400).json({ greska: 'naziv mora biti string' })
+    }
+
+    if (typeof split.opis !== 'string') {
+        return res.status(400).json({ greska: 'opis mora biti string' })
+    }
+
+    if (typeof split.broj_dana !== 'number') {
+        return res.status(400).json({ greska: 'broj_dana mora biti broj' })
+    }
+
+    if (!Array.isArray(split.dani)) {
+        return res.status(400).json({ greska: 'dani moraju biti array' })
+    }
+
+    if (split.dani.length !== split.broj_dana) {
+        return res.status(400).json({greska: 'Krivi broj dana'})
     }
 
     const dozvoljeni_kljucevi_dan=['dan', 'naziv', 'vjezbe']
@@ -40,60 +60,25 @@ export const validirajSplit= async (req, res, next)=>{
             return res.status(400).json({greska: 'Dan nema obavezna polja'})
         }
 
+        if (typeof dan.dan !== 'number') {
+            return res.status(400).json({ greska: 'dan mora biti broj' })
+        }
+
+        if (typeof dan.naziv !== 'string') {
+            return res.status(400).json({ greska: 'naziv dana mora biti string' })
+        }
+
         if (!Array.isArray(dan.vjezbe)) {
-            return res.status(400).json({greska: 'vjezbe moraju biti array'})
+            return res.status(400).json({greska: 'Vježbe moraju biti array'})
         }
-    }
 
-
-
-    const dozvoljeni_kljucevi_vjezbe=['id', 'broj_setova']
-
-    for (const dan of split.dani) {
         for (const vjezba of dan.vjezbe) {
-            const kljucevi = Object.keys(vjezba);
-            const krivi = kljucevi.some(k => !dozvoljeni_kljucevi_vjezbe.includes(k));
-            const fali_vjezbe = dozvoljeni_kljucevi_vjezbe.filter(k => !(k in vjezba))
 
-            if (krivi) {
-                return res.status(400).json({greska: 'krivi oblik vjezbe u splitu'});
+            if (typeof vjezba !== 'string') {
+                return res.status(400).json({greska: 'Vježba mora biti string'})
             }
 
-
-            if (fali_vjezbe.length > 0) {
-                return res.status(400).json({greska: 'Vjezba dan nema obavezna polja'})
-            }
         }
-    }
-
-    const dozvoljeni_kljucevi_kalendar=['naziv', 'split_dan_id']
-
-    
-    if(typeof split.kalendar !== 'object' || Array.isArray(split.kalendar)) {
-        return res.status(400).json({greska: 'kalendar mora biti objekt'})
-    }
-
-    for (const [datum, vrijednost] of Object.entries(split.kalendar)) {
-        if(typeof vrijednost !== 'object' || Array.isArray(vrijednost)){
-            return res.status(400).json({greska: 'krivi oblik kalendara u splitu'})
-        }
-
-        const kljucevi = Object.keys(vrijednost);
-        const krivi = kljucevi.some(k => !dozvoljeni_kljucevi_kalendar.includes(k))
-
-        if(krivi){
-            return res.status(400).json({greska: 'krivi oblik kalendara u splitu'})
-        }
-        
-        const fali_kalendar = dozvoljeni_kljucevi_kalendar.filter(k => !(k in vrijednost))
-
-        if (fali_kalendar.length > 0) {
-            return res.status(400).json({greska: 'Kalendar dan nema obavezna polja'})
-        }
-    }
-
-    if(Object.keys(split.kalendar).length!==14){
-        return res.status(400).json({greska: 'Kalendar mora sadržavati 14 dana'})
     }
 
     return next()
@@ -155,6 +140,39 @@ export const pronadeniDan= async(req, res, next)=>{
     }
 
     req.dan= dan
+
+    return next()
+}
+
+
+export const dummyKalendar = async(req, res, next)=>{
+    const kalendar = {}
+
+    for (let i = 0; i < 14; i++) {
+        const datum = new Date(2004, 7, 6 + i).toISOString().split('T')[0]
+
+        kalendar[datum] = {
+            split_dan_id: null,
+            naziv: "Odmor"
+        }
+    }
+
+    req.kalendar= kalendar
+
+    return next()
+}
+
+export const pripremiDane= async(req, res, next)=>{
+    const split= req.body
+
+    split.dani= split.dani.map(dan=>({
+        dan: dan.dan,
+        naziv: dan.naziv,
+        vjezbe: dan.vjezbe.map(id => ({
+            id: id,
+            broj_setova: 1
+        }))
+    }))
 
     return next()
 }

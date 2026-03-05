@@ -1,9 +1,9 @@
 import express from 'express';
-import { splits } from '../data/data.js'
 import { connectToDatabase } from '../db.js';
 import { idKorisnika } from '../middleware/middleware.js';
-import { validirajSplit, sviSplitovi, trenutniSplit } from '../middleware/split_middlewade.js';
+import { validirajSplit, sviSplitovi, trenutniSplit, dummyKalendar, pripremiDane } from '../middleware/split_middlewade.js';
 import { ObjectId } from 'mongodb'
+import { sveVjezbe } from '../middleware/vjezba_middleware.js';
 
 
 
@@ -23,10 +23,14 @@ router.get('/', async (req, res)=>{
 
 
  
-router.post('/', [validirajSplit], async (req, res)=>{
+router.post('/', [validirajSplit, pripremiDane, dummyKalendar], async (req, res)=>{
     const splits_collection= db.collection('splits')
 
+    const vjezba_collection= db.collection('vjezbe')
+
     const split= req.body
+
+    const kalendar= req.kalendar
 
     let rez={}
     try{
@@ -36,6 +40,18 @@ router.post('/', [validirajSplit], async (req, res)=>{
         if(postoji){
             return res.status(400).json({error: 'Split kojeg pokušavate stvoriti već posoji'})
         }
+
+        for(const d of split.dani){
+            for(const v of d.vjezbe){
+                const vjezba_postoji= await vjezba_collection.findOne({_id: new ObjectId(v)})
+
+                if(!vjezba_postoji){
+                    return res.status(404).json({greska: 'Vježba u splitu ne postoji'})
+                }
+            }
+        }
+
+        split.kalendar= kalendar
         
         rez= await splits_collection.insertOne(split)
 
@@ -116,25 +132,34 @@ router.get('/biranje', [idKorisnika, sviSplitovi], async (req, res)=>{
     return res.status(200).json(svi_splitovi)
 })
 
-router.post('/custom', [validirajSplit, idKorisnika], async (req, res)=>{
+router.post('/custom', [validirajSplit, idKorisnika, pripremiDane, dummyKalendar, sveVjezbe], async (req, res)=>{
     const splits_collection= db.collection('customSplits')
 
     const novi_split=req.body
 
-    if(!req.user){
-        return res.status(401).json({greska: 'niste autorizirani za stvaranje custom splita'})
-    }
-
     const korisnik_id= req.user._id
 
+    const kalendar= req.kalendar
 
     let rez={}
     try{
-        const postoji= await splits_collection.findOne({naziv: novi_split.naziv, id_korisnik: req.user._id})
+        const postoji= await splits_collection.findOne({naziv: novi_split.naziv, id_korisnik: korisnik_id})
 
         if(postoji){
             return res.status(400).json({error: 'Split kojeg pokušavate stvoriti već posoji'})
         }
+
+        const sve_vjezbe_id = req.sve_vjezbe.map(v => v._id.toString())
+
+        for(const dan of novi_split.dani){
+            for(const v of dan.vjezbe){
+                if(!sve_vjezbe_id.includes(v.id)){
+                    return res.status(404).json({greska: `Vježba u splitu ne postoji`})
+                }
+            }
+        }
+
+        novi_split.kalendar= kalendar
         
         rez= await splits_collection.insertOne({id_korisnik: korisnik_id, ...novi_split})
 
