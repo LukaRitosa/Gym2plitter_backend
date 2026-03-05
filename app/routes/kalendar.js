@@ -129,7 +129,9 @@ router.put('/update', [idKorisnika, trenutniSplit], async (req, res)=>{
 
             let zadnjiDatum = new Date(zadnjiDatumString)
 
-            const radniDani = sviDani.filter(d => kalendar[d].split_dan_id !== null)
+            // const radniDani = sviDani.filter(d => kalendar[d].split_dan_id !== null)
+
+            const radniDani = sviDani.filter(d => kalendar[d] && kalendar[d].split_dan_id !== null)
 
             let zadnji_datum_id= radniDani.at(-1)
 
