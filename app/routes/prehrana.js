@@ -58,6 +58,8 @@ router.patch('/:datum/:obrok/dodaj', [idKorisnika, nadiDanPrehrane, sviObroci, s
 
     let hrana = pronadeniObrok || pronadenaHrana
 
+    const user_collection= db.collection('users')
+
     try{
 
         let kalorije= Number(((zahtjev.grami/hrana.grami) * hrana.kalorije).toFixed(2))
@@ -76,12 +78,131 @@ router.patch('/:datum/:obrok/dodaj', [idKorisnika, nadiDanPrehrane, sviObroci, s
         dan_prehrane.ostvareniProteini+= proteini
 
 
-        await db.collection('users').updateOne(
+        await user_collection.updateOne(
             { _id: new ObjectId(req.user._id), 'prehrana.datum': dan_prehrane.datum },
             { $set: { 'prehrana.$': dan_prehrane } }
         )
 
-        return res.status(200).json({poruka: 'usijeh'})
+        return res.status(200).json({poruka: 'Uspješno dodavanje vježbe'})
+    } catch(error){
+        console.error(error)
+        return res.status(500).json({greska: error})
+    }
+})
+
+router.patch('/:datum/:obrok/ukloni/:id', [idKorisnika, nadiDanPrehrane], async (req, res)=>{
+    const id= req.params.id
+    const obrok= req.params.obrok
+    let dan_prehrane= req.dan_prehrane
+
+    if(obrok!=='marenda' && obrok!=='rucak' && obrok!=='vecera' && obrok!=='snack' && obrok!=='nekarakterizirano'){
+        return res.status(400).json({greska: 'Krivi obrok'})
+    }
+
+    if(!id){
+        return res.status(400).json({greska: 'Niste odabrali vježbu za ulkanjanje'})
+    }
+
+    const hrana= dan_prehrane.pojedeno[obrok].find(h => h._id.toString() === id)
+
+    if(!hrana){
+        return res.status(400).json({greska: 'Hrana koju pokušavate ukloniti ne postoji'})
+    }
+
+    const user_collection= db.collection('users')
+
+
+    try{
+
+        let kalorije= hrana.kalorije
+
+        let proteini= hrana.proteini
+
+        dan_prehrane.pojedeno[obrok]= dan_prehrane.pojedeno[obrok].filter(h => h._id.toString() !== id)
+
+        dan_prehrane.ostvareneKalorije-= kalorije
+        dan_prehrane.ostvareniProteini-= proteini
+        
+
+
+        await user_collection.updateOne(
+            { _id: new ObjectId(req.user._id), 'prehrana.datum': dan_prehrane.datum },
+            { $set: { 'prehrana.$': dan_prehrane } }
+        )
+
+        return res.status(200).json({poruka: 'Uspješno uklanjanje vježbe'})
+    } catch(error){
+        console.error(error)
+        return res.status(500).json({greska: error})
+    }
+})
+
+router.put('/update', [idKorisnika], async (req, res)=>{
+    const user_collection= db.collection('users')
+
+    let korisnik= await user_collection.findOne({_id: new ObjectId(req.user._id)})
+
+    let kalendar= korisnik.prehrana
+
+    let danasDate= new Date()
+
+    let danasString= danasDate.toLocaleDateString("sv-SE")
+
+    let index_dana= kalendar.findIndex(d => d.datum===danasString)
+    
+    if(index_dana===6){
+        return res.status(400).json({greska: 'Pokušavate ažurirati točan kalendar'})
+    }
+
+    const zadnjiDate = new Date(kalendar.at(-1).datum)
+
+    const razlika = Math.floor((danasDate - zadnjiDate) / (1000 * 60 * 60 * 24))
+
+    function prazan_dan(datum){
+        return{
+            datum: datum,
+            ostvareneKalorije: 0,
+            ostvareniProteini: 0,
+            pojedeno: {
+                marenda: [],
+                rucak: [],
+                vecera: [],
+                snack: [],
+                nekarakterizirano: []
+            }
+        }
+    }
+
+    let prehrana= []
+
+    try{
+
+        if(razlika>6 || razlika<0 || kalendar.length !== 7){
+            for(let i=6; i>=0; i--){
+                let d= new Date()
+                d.setDate(danasDate.getDate()-i)
+                let datum= d.toLocaleDateString("sv-SE")
+                prehrana.push(prazan_dan(datum))
+            }
+        }
+
+
+        else{
+            prehrana= [...kalendar]
+
+            for(let i=razlika - 1; i>=0; i--){
+                prehrana.shift()
+                let d= new Date()
+                d.setDate(danasDate.getDate()-i)
+                let datum= d.toLocaleDateString("sv-SE")
+                prehrana.push(prazan_dan(datum))
+            }
+        }
+
+        await user_collection.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { prehrana: prehrana } })
+
+        return res.status(200).json({poruka: 'dan uspješno ažuriran'})
+
     } catch(error){
         console.error(error)
         return res.status(500).json({greska: error})
