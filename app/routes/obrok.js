@@ -2,6 +2,7 @@ import express from 'express';
 import { connectToDatabase } from '../db.js';
 import { idKorisnika } from '../middleware/middleware.js';
 import { obrokValidacija, sviObroci } from '../middleware/obrok_middleware.js';
+import { svaHrana } from '../middleware/hrana_middleware.js';
 
 
 
@@ -26,6 +27,8 @@ router.get('/biranje', [idKorisnika, sviObroci], async (req, res)=>{
 
 router.post('/', [obrokValidacija], async (req, res)=>{
     const novi_obrok= req.body
+
+    const obavezni_kljucevi= ['naziv', 'opis', 'sastojci']
 
     const obrok_collection= db.collection('obroci')
 
