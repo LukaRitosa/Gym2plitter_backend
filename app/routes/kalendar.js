@@ -3,7 +3,7 @@ import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.
 
 import { connectToDatabase } from '../db.js';
 import { idKorisnika, nadiKorisnika } from '../middleware/middleware.js';
-import { trenutniSplit } from '../middleware/split_middlewade.js';
+import { kalendarUpToDate, trenutniSplit } from '../middleware/split_middlewade.js';
 import { checkPassword, generateJWT, hashPassword } from '../auth.js';
 import { ObjectId } from 'mongodb'
 
@@ -170,6 +170,58 @@ router.put('/update', [idKorisnika, trenutniSplit], async (req, res)=>{
     }
 })
 
+router.put('/postavi_odmor/:datum', [idKorisnika, trenutniSplit, kalendarUpToDate], async (req, res)=>{
+    const user_split_collection= db.collection('userSplits')
+    let trenutni_split= req.trenutni_split
+    const datum= req.params.datum
+    let kalendar= {...trenutni_split.kalendar}
+
+
+    if(!kalendar[datum]){
+        return res.status(404).json({greska: `Datum ${datum} nije u splitu`})
+    }
+
+    const original= {...kalendar}
+
+    kalendar[datum]= {
+        ...kalendar[datum],
+        split_dan_id: null,
+        naziv: "Odmor"
+    }
+
+    const datumi= Object.keys(kalendar).sort()
+    const idx = datumi.indexOf(datum)
+    const radniDani = datumi.slice(idx + 1).filter(d => original[d].split_dan_id !== null)
+
+    let lastValid = { 
+        split_dan_id: original[datum].split_dan_id, 
+        naziv: original[datum].naziv 
+    }
+
+    try{
+        for(const d of radniDani){
+            kalendar[d]= {
+                ...kalendar[d],
+                split_dan_id: lastValid.split_dan_id,
+                naziv: lastValid.naziv
+            }
+            lastValid= {
+                split_dan_id: original[d].split_dan_id, 
+                naziv: original[d].naziv 
+            }
+        }
+
+        await user_split_collection.updateOne(
+            {_id: new ObjectId(trenutni_split._id)},
+            { $set: { kalendar: kalendar } }
+        )
+
+        return res.status(200).json({ poruka: 'Dan postavljen na odmor' })
+    }catch (error) {
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
+    }
+})
 
 
 export default router

@@ -176,3 +176,23 @@ export const pripremiDane= async(req, res, next)=>{
 
     return next()
 }
+
+export const kalendarUpToDate= async(req, res, next)=>{
+    const trenutni_split= req.trenutni_split
+    
+    let kalendar= {...trenutni_split.kalendar}
+
+    const datumi= Object.keys(kalendar).sort()
+
+    if (datumi.length < 14) {
+        return res.status(400).json({ greska: 'Kalendar mora imati najmanje 14 dana' })
+    }
+
+    const danas = new Date().toISOString().split('T')[0]
+
+    if (datumi[0] !== danas) {
+        return res.status(400).json({ greska: 'Prvi datum mora biti današnji' })
+    }
+
+    return next()
+}
