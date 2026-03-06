@@ -3,6 +3,7 @@ import { connectToDatabase } from '../db.js';
 import { idKorisnika } from '../middleware/middleware.js';
 import { obrokValidacija, sviObroci } from '../middleware/obrok_middleware.js';
 import { svaHrana } from '../middleware/hrana_middleware.js';
+import { ObjectId } from 'mongodb';
 
 
 
@@ -28,17 +29,25 @@ router.get('/biranje', [idKorisnika, sviObroci], async (req, res)=>{
 router.post('/', [obrokValidacija], async (req, res)=>{
     const novi_obrok= req.body
 
-    const obavezni_kljucevi= ['naziv', 'opis', 'sastojci']
-
-    const obrok_collection= db.collection('obroci')
+    const hrana_collection= db.collection('hrana')
 
     let rez={}
 
     try{
-        const postoji= await obrok_collection.findOne({naziv: novi_obrok.naziv})
+        for(const s of novi_obrok.sastojci){
+            let hrana= await hrana_collection.findOne({_id: new ObjectId(s.id)})
 
-        if(postoji){
-            return res.status(400).json({greska: 'Obrok koji pokušavate stvoriti već postoji'})
+            if(!hrana){
+                return res.status(404).json({greska: 'Sastojak u obroku ne postoji'})
+            }
+
+            s.naziv= hrana.naziv
+
+            novi_obrok.kalorije+= (hrana.kalorije * s.grami) / 100
+
+            novi_obrok.proteini+= (hrana.proteini * s.grami) / 100
+
+            novi_obrok.grami+= s.grami
         }
 
         rez= await obrok_collection.insertOne(novi_obrok)
@@ -50,10 +59,12 @@ router.post('/', [obrokValidacija], async (req, res)=>{
     }
 })
 
-router.post('/custom', [idKorisnika, obrokValidacija], async (req, res)=>{
+router.post('/custom', [idKorisnika, obrokValidacija, svaHrana], async (req, res)=>{
     const novi_obrok= req.body
 
     const id_korisnik= req.user._id
+
+    const sva_hrana= req.sva_hrana
 
     const obrok_collection= db.collection('customObroci')
 
@@ -63,7 +74,23 @@ router.post('/custom', [idKorisnika, obrokValidacija], async (req, res)=>{
         const postoji= await obrok_collection.findOne({naziv: novi_obrok.naziv, id_korisnik: id_korisnik})
 
         if(postoji){
-            return res.status(400).json({greska: 'Obrok koji pokušavate stvoriti već postoji'})
+            return res.status(400).json({greska: 'Već ste stvorili ovakav obrok'})
+        }
+
+        for(const s of novi_obrok.sastojci){
+            let hrana= sva_hrana.find(h => h._id.toString()=== s.id)
+
+            if(!hrana){
+                return res.status(404).json({greska: 'Sastojak u obroku ne postoji'})
+            }
+
+            s.naziv= hrana.naziv
+
+            novi_obrok.kalorije+= (hrana.kalorije * s.grami) / 100
+
+            novi_obrok.proteini+= (hrana.proteini * s.grami) / 100
+
+            novi_obrok.grami+= s.grami
         }
         
         rez= await obrok_collection.insertOne({...novi_obrok, id_korisnik: id_korisnik})

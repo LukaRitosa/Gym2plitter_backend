@@ -43,7 +43,7 @@ router.post('/', [validirajSplit, pripremiDane, dummyKalendar], async (req, res)
 
         for(const d of split.dani){
             for(const v of d.vjezbe){
-                const vjezba_postoji= await vjezba_collection.findOne({_id: new ObjectId(v)})
+                let vjezba_postoji= await vjezba_collection.findOne({_id: new ObjectId(v)})
 
                 if(!vjezba_postoji){
                     return res.status(404).json({greska: 'Vježba u splitu ne postoji'})

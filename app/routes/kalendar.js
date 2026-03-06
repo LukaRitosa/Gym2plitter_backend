@@ -79,7 +79,7 @@ router.put('/update', [idKorisnika, trenutniSplit], async (req, res)=>{
     let danasDate= new Date()
     let danasString= danasDate.toLocaleDateString("sv-SE")
 
-    const sviDani = Object.keys(kalendar).sort(/*(a,b)=> new Date(a)-new Date(b)*/)
+    const sviDani = Object.keys(kalendar).sort()
 
     let brojac = 0
 
@@ -128,8 +128,6 @@ router.put('/update', [idKorisnika, trenutniSplit], async (req, res)=>{
             const zadnjiDatumString = Object.keys(kalendar).sort().at(-1)
 
             let zadnjiDatum = new Date(zadnjiDatumString)
-
-            // const radniDani = sviDani.filter(d => kalendar[d].split_dan_id !== null)
 
             const radniDani = sviDani.filter(d => kalendar[d] && kalendar[d].split_dan_id !== null)
 

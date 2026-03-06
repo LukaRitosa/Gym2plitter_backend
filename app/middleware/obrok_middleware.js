@@ -8,7 +8,7 @@ let db= await connectToDatabase()
 export const obrokValidacija= async(req, res, next)=>{
     const novi_obrok= req.body
 
-    const dozvoljeni_kljucevi=['naziv', 'opis', 'kalorije', 'proteini', 'grami', 'sastojci']
+    const dozvoljeni_kljucevi=['naziv', 'opis', 'sastojci']
 
     const obrok_kljucevi= Object.keys(novi_obrok)
 
@@ -18,10 +18,46 @@ export const obrokValidacija= async(req, res, next)=>{
         return res.status(400).json({greska: 'Krivi oblik obroka'})
     }
 
+    if(typeof novi_obrok.naziv !== 'string'){
+        return res.status(400).json({greska: 'Naziv mora biti string'})
+    }
+
+    if(typeof novi_obrok.opis !== 'string'){
+        return res.status(400).json({greska: 'Opis mora biti string'})
+    }
+
+    if(!Array.isArray(novi_obrok.sastojci)){
+        return res.status(400).json({greska: 'Sastojci moraju biti array'})
+    }
+
+    for(const s of novi_obrok.sastojci){
+
+        if(typeof s.id !== 'string'){
+            return res.status(400).json({greska: 'Sastojak mora imati id'})
+        }
+
+        if(typeof s.grami !== 'number'){
+            return res.status(400).json({greska: 'Sastojak mora imati grame'})
+        }
+
+    }
+
+    const obrok_collection= db.collection('obroci')
+
+    const postoji= await obrok_collection.findOne({naziv: novi_obrok.naziv})
+
+    if(postoji){
+        return res.status(400).json({greska: 'Obrok koji pokušavate stvoriti već postoji'})
+    }
+
+    req.body.kalorije= 0
+    req.body.proteini= 0
+    req.body.grami= 0
+
     return next()
 }
 
-
+ 
 export const sviObroci= async(req, res, next)=>{
     let svi_obroci=[]
 

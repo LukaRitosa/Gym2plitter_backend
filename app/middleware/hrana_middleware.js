@@ -1,6 +1,4 @@
 import { connectToDatabase } from "../db.js";
-import { verifyJWT } from "../auth.js"
-import { ObjectId } from 'mongodb'
 
 let db= await connectToDatabase()
 
