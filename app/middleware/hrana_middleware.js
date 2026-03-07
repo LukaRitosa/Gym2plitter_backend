@@ -16,6 +16,14 @@ export const hranaValidacija= async(req, res, next)=>{
         return res.status(400).json({greska: 'krivi oblik hrane'})
     }
 
+    const hrana_collection= db.collection('hrana')
+
+    let postoji= await hrana_collection.findOne({naziv: nova_hrana.naziv})
+
+    if(postoji){
+        return res.status(400).json({greska: 'Hrana koju pokušavate stvoriti već postoji'})
+    }
+
     return next()
 }
 
@@ -28,7 +36,7 @@ export const svaHrana= async(req, res, next)=>{
     const custom_hrana_collection= db.collection('customHrana')
 
     if(!req.user){
-        return res.status(401).json({greska: 'Nemate autorizaciju za pregled splitova'})
+        return res.status(401).json({greska: 'Nemate autorizaciju za pregled hrane'})
     }
 
     const korisnik_id=req.user._id
@@ -41,5 +49,5 @@ export const svaHrana= async(req, res, next)=>{
 
     req.sva_hrana= sva_hrana
 
-    next()
-}
+    return next()
+} 

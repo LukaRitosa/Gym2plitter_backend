@@ -1,5 +1,4 @@
 import express from 'express';
-import { splits } from '../data/data.js'
 import { connectToDatabase } from '../db.js';
 import { idKorisnika } from '../middleware/middleware.js';
 import { pronadeniDan, trenutniSplit } from '../middleware/split_middlewade.js';
@@ -77,8 +76,8 @@ router.patch('/:id_dan/vjezba/:id_vjezba', [idKorisnika, trenutniSplit, pronaden
 
         return res.status(200).json({poruka: 'Vježba uspješno dodana'})
     }catch(error){
-        console.error(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -115,8 +114,8 @@ router.patch('/:id_dan/ukloni_vjezbu/:id_vjezba', [idKorisnika, trenutniSplit, p
 
         return res.status(200).json({poruka: 'Vježba uspješno uklonjena'})
     }catch(error){
-        console.error(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -172,8 +171,8 @@ router.put('/:id_dan/novi_setovi', [idKorisnika, trenutniSplit, pronadeniDan], a
 
         return res.status(200).json({poruka: 'Setovi uspješno ažurirani'})
     }catch(error){
-        console.error(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 
 })

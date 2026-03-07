@@ -1,6 +1,4 @@
 import { connectToDatabase } from "../db.js";
-import { verifyJWT } from "../auth.js"
-import { ObjectId } from 'mongodb'
 
 let db= await connectToDatabase()
 
@@ -22,6 +20,10 @@ export const validirajVjezbu= async (req, res, next)=>{
 
     if (nema_obaveznih_kljuceva.length > 0) {
         return res.status(400).json({greska: 'Nedostaju obavezna polja'})
+    }
+
+    if(!Array.isArray(nova_vjezba.ostali_misici)){
+        return res.status(400).json({greska: 'ostali_misici mora biti array'})
     }
 
     const svi_misici=[

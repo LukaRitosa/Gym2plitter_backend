@@ -2,6 +2,7 @@ import express from 'express';
 import { connectToDatabase } from '../db.js';
 import { hranaValidacija, svaHrana } from '../middleware/hrana_middleware.js';
 import { idKorisnika } from '../middleware/middleware.js';
+import { ObjectId } from 'mongodb';
 
 
 
@@ -32,18 +33,12 @@ router.post('/', [hranaValidacija], async (req, res)=>{
     let rez={}
 
     try{
-        let postoji= await hrana_collection.findOne({naziv: nova_hrana.naziv})
-
-        if(postoji){
-            return res.status(400).json({greska: 'Hrana koju pokušavate stvoriti već postoji'})
-        }
-
         rez= await hrana_collection.insertOne({...nova_hrana, grami: 100})
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.log(error.errorResponse)
-        return res.status(400).json({error: error.errorResponse})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -67,8 +62,30 @@ router.post('/custom', [ idKorisnika, hranaValidacija], async (req, res)=>{
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.log(error.errorResponse)
-        return res.status(400).json({error: error.errorResponse})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
+    }
+})
+
+router.delete('/:id', [idKorisnika, svaHrana], async (req, res)=>{
+    const id_korisnik= req.user._id
+    const id_hrana= req.params.id
+
+    const custom_hrana_collection= db.collection('customHrana')
+
+    const postoji= await custom_hrana_collection.findOne({ _id: new ObjectId(id_hrana), id_korisnik: id_korisnik })
+
+    try{
+        if(!postoji){
+            return res.status(400).json({greska: 'Hrana ne postoji'})
+        }
+
+        await custom_hrana_collection.deleteOne({ _id: new ObjectId(id_hrana), id_korisnik: id_korisnik })
+
+        return res.status(200).json({ poruka: 'Hrana obrisana'})
+    }catch(error){
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 

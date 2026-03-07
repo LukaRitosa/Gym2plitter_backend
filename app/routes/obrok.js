@@ -17,7 +17,8 @@ let db = await connectToDatabase();
 router.get('/', async (req, res)=>{
     const obrok_collection= db.collection('obroci')
     const obroci= await obrok_collection.find().toArray()
-    res.status(200).json(obroci)
+    
+    return res.status(200).json(obroci)
 })
 
 router.get('/biranje', [idKorisnika, sviObroci], async (req, res)=>{
@@ -54,8 +55,8 @@ router.post('/', [obrokValidacija], async (req, res)=>{
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.log(error.errorResponse)
-        return res.status(400).json({error: error.errorResponse})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -97,8 +98,8 @@ router.post('/custom', [idKorisnika, obrokValidacija, svaHrana], async (req, res
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.log(error.errorResponse)
-        return res.status(400).json({error: error.errorResponse})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 

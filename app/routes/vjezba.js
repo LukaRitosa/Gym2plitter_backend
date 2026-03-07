@@ -1,12 +1,9 @@
 import express from 'express'
-import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
 import { connectToDatabase } from '../db.js';
 import { idKorisnika } from '../middleware/middleware.js';
 import { validirajVjezbu, sveVjezbe } from '../middleware/vjezba_middleware.js';
 import { body, validationResult } from 'express-validator'
 import { ObjectId } from 'mongodb';
-
-
 
 
 const router = express.Router();
@@ -18,19 +15,11 @@ let db = await connectToDatabase();
 router.get('/', async (req, res)=>{
     let vjezbe_collection= db.collection('vjezbe')
     let sve_vjezbe= await vjezbe_collection.find().toArray()
-    res.status(200).json(sve_vjezbe)
+
+    return res.status(200).json(sve_vjezbe)
 })
 
-
-router.post('/', 
-    [
-        body('opis').exists(),
-        body('glavni_misic').exists(),
-        body('ostali_misici').exists(),
-        body('slika').exists(),
-        validirajVjezbu
-    ], 
-async (req, res)=>{
+router.post('/', [validirajVjezbu], async (req, res)=>{
 
     const errors = validationResult(req)
 
@@ -55,8 +44,8 @@ async (req, res)=>{
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.log(error.errorResponse)
-        return res.status(400).json({error: error.errorResponse})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -79,8 +68,8 @@ router.post('/custom', [validirajVjezbu, idKorisnika], async (req, res)=>{
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.log(error)
-        return res.status(400).json({greska: error.message})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -103,5 +92,27 @@ router.get('/:id', [idKorisnika, sveVjezbe], async (req, res)=>{
 
     return res.status(200).json(vjezba)
 }) 
+
+
+router.delete('/custom/:id', [idKorisnika], async (req, res)=>{
+    const id_korisnik= req.user._id
+    const id_vjezba= req.params.id
+    const custom_vjezbe_collection= db.collection('customVjezbe')
+
+    const postoji= await custom_vjezbe_collection.findOne({ _id: new ObjectId(id_vjezba), id_korisnik: id_korisnik })
+
+    if(!postoji){
+        return res.status(404).json({greska: 'Vježba ne postoji'})
+    }
+
+    try{
+        await custom_vjezbe_collection.deleteOne({ _id: new ObjectId(id_vjezba), id_korisnik: id_korisnik })
+
+        return res.status(200).json({poruka: 'Vježba uspješno obrisana'})
+    }catch(error){
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
+    }
+})
 
 export default router

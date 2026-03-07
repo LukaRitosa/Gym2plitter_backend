@@ -1,6 +1,4 @@
-import { connectToDatabase } from "../db.js";
-import { verifyJWT } from "../auth.js"
-import { ObjectId } from 'mongodb'
+import { connectToDatabase } from "../db.js"
 
 let db= await connectToDatabase()
 
@@ -79,5 +77,5 @@ export const sviObroci= async(req, res, next)=>{
 
     req.svi_obroci= svi_obroci
 
-    next()
+    return next()
 }

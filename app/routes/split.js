@@ -57,8 +57,8 @@ router.post('/', [validirajSplit, pripremiDane, dummyKalendar], async (req, res)
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.log(error)
-        return res.status(400).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -88,8 +88,8 @@ router.post('/user_split/:id', [idKorisnika, sviSplitovi], async (req, res)=>{
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.error(error)
-        return res.status(500).json({greska: `greška: ${error}`})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -114,8 +114,8 @@ router.delete('/user_split/:id', [idKorisnika], async (req, res)=>{
 
         return res.status(200).json({poruka: 'Split uspješno obrisan'})
     } catch(error){
-        console.error(error)
-        return res.status(500).json({greska: `greška: ${error}`})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -165,10 +165,39 @@ router.post('/custom', [validirajSplit, idKorisnika, pripremiDane, dummyKalendar
 
         return res.status(201).json(rez.insertedId)
     } catch(error){
-        console.log(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
+
+
+router.delete('/custom/:id', [idKorisnika], async (req, res)=>{
+    const split_id=req.params.id
+    const id_user= req.user._id
+
+
+    const custom_split_collection= db.collection('customSplits')
+    const users_collection= db.collection('users')    
+    
+    try{
+        const split= await custom_split_collection.findOne({ _id: new ObjectId(split_id), id_korisnik: id_user })
+
+        if(!split){
+            return res.status(404).json({greska: 'Pokušavate obrisati split koji ne postoji'})
+        }
+    
+        await custom_split_collection.deleteOne({ _id: new ObjectId(split_id), id_korisnik: id_user})
+
+        await users_collection.updateOne({_id: new ObjectId(id_user)}, {$set: {trenutniSplit: null}})
+
+        return res.status(200).json({poruka: 'Split uspješno obrisan'})
+    } catch(error){
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
+    }
+})
+
+
 
 
 export default router

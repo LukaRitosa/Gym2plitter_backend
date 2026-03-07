@@ -1,6 +1,4 @@
 import express from 'express';
-import { users, user_splits, splits, vjezbe, custom_vjezbe } from '../data/data.js'
-
 import { connectToDatabase } from '../db.js';
 import { idKorisnika, nadiKorisnika } from '../middleware/middleware.js';
 import { checkPassword, generateJWT, hashPassword } from '../auth.js';
@@ -93,8 +91,8 @@ router.post('/registracija', [nadiKorisnika], async (req, res)=>{
 
         return res.status(201).json(rez.insertedId)
     } catch (error) {
-        console.log(error.errorResponse)
-        return res.status(400).json({error: `Desila se greška: ${error}`})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -165,8 +163,8 @@ router.patch('/test', [idKorisnika], async (req, res)=>{
         return res.status(200).json({ poruka: 'Uspješno ažurirano' })
 
     }catch(error){
-        console.error(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -180,8 +178,8 @@ router.get('/profil', [idKorisnika], async (req, res)=>{
 
         return res.status(200).json(korisnik)
     }catch(error){
-        console.error(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -216,11 +214,12 @@ router.patch('/kalkulator', [idKorisnika], async (req, res)=>{
     }
 
     const cilj_kalorije= Math.round(kcal)
-    const cilj_proteini= Math.round(tezina*2)
+    const cilj_proteini= Math.round(tezina * 2)
 
     const user_collection= db.collection('users')
 
     let rez={}
+
     try{
         rez= await user_collection.updateOne(
             {_id: new ObjectId(id_korisnik)},
@@ -236,13 +235,13 @@ router.patch('/kalkulator', [idKorisnika], async (req, res)=>{
                 }
             }
         )
-    return res.status(200).json({ poruka: 'Uspješno ažurirano' })
+    
+        return res.status(200).json({ poruka: 'Uspješno ažurirano' })
 
     }catch(error){
-        console.error(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
-
 })
 
 

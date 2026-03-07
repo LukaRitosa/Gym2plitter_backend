@@ -1,6 +1,6 @@
 import express from 'express';
 import { connectToDatabase } from '../db.js';
-import { idKorisnika, nadiKorisnika } from '../middleware/middleware.js';
+import { idKorisnika } from '../middleware/middleware.js';
 import { ObjectId } from 'mongodb'
 import { nadiDanPrehrane } from '../middleware/prehrana_middleware.js';
 import { sviObroci } from '../middleware/obrok_middleware.js';
@@ -22,8 +22,8 @@ router.get('/',  [idKorisnika], async (req, res)=>{
 
         return res.status(200).json(korisnik.prehrana)
     }catch(error){
-        console.error(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -58,6 +58,12 @@ router.patch('/:datum/:obrok/dodaj', [idKorisnika, nadiDanPrehrane, sviObroci, s
 
     let hrana = pronadeniObrok || pronadenaHrana
 
+    const postoji = dan_prehrane.pojedeno[obrok].find(h => h._id.toString() === hrana._id.toString())
+
+    if(postoji){
+        return res.status(400).json({greska: 'Stavka već postoji u ovom obroku. Uredite količinu.'})
+    }
+
     const user_collection= db.collection('users')
 
     try{
@@ -83,10 +89,10 @@ router.patch('/:datum/:obrok/dodaj', [idKorisnika, nadiDanPrehrane, sviObroci, s
             { $set: { 'prehrana.$': dan_prehrane } }
         )
 
-        return res.status(200).json({poruka: 'Uspješno dodavanje vježbe'})
+        return res.status(200).json({poruka: 'Uspješno dodavanje stavke'})
     } catch(error){
-        console.error(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -132,8 +138,8 @@ router.patch('/:datum/:obrok/ukloni/:id', [idKorisnika, nadiDanPrehrane], async 
 
         return res.status(200).json({poruka: 'Uspješno uklanjanje vježbe'})
     } catch(error){
-        console.error(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
@@ -204,10 +210,65 @@ router.put('/update', [idKorisnika], async (req, res)=>{
         return res.status(200).json({poruka: 'dan uspješno ažuriran'})
 
     } catch(error){
-        console.error(error)
-        return res.status(500).json({greska: error})
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
     }
 })
 
+router.patch('/:datum/:obrok/uredi/:id', [idKorisnika, nadiDanPrehrane], async (req, res)=>{
+    const id_stavka= req.params.id
+    const obrok= req.params.obrok
+    const grami= req.body.grami
+
+    let dan_prehrane= req.dan_prehrane
+
+    if(!grami || grami <= 0){
+        return res.status(400).json({greska: 'Krivi grami'})
+    }
+
+    if(obrok!=='marenda' && obrok!=='rucak' && obrok!=='vecera' && obrok!=='snack' && obrok!=='nekarakterizirano'){
+        return res.status(400).json({greska: 'Krivi obrok'})
+    }
+
+    if(!id_stavka){
+        return res.status(400).json({greska: 'Niste odabrali vježbu za ulkanjanje'})
+    }
+
+    const stavka= dan_prehrane.pojedeno[obrok].find(h => h._id.toString()=== id_stavka)
+
+    if(!stavka){
+        return res.status(404).json({greska: 'Stavka nije pronađena'})
+    }
+
+    const user_collection= db.collection('users')
+
+    try{
+        dan_prehrane.ostvareneKalorije-= stavka.kalorije
+        dan_prehrane.ostvareniProteini-= stavka.proteini
+
+        const kalorije_po_gramu= stavka.kalorije/stavka.grami
+        const proteini_po_gramu= stavka.proteini/stavka.grami
+
+        const nove_kalorije= Number((kalorije_po_gramu * grami).toFixed(2))
+        const novi_proteini= Number((proteini_po_gramu * grami).toFixed(2))
+
+        stavka.grami= grami
+        stavka.kalorije= nove_kalorije
+        stavka.proteini= novi_proteini
+
+        dan_prehrane.ostvareneKalorije+= nove_kalorije
+        dan_prehrane.ostvareniProteini+= novi_proteini
+
+        await user_collection.updateOne(
+            { _id: new ObjectId(req.user._id), 'prehrana.datum': dan_prehrane.datum },
+            { $set: { 'prehrana.$': dan_prehrane } }
+        )
+        
+        return res.status(200).json({poruka: 'Stavka ažurirana'})
+    } catch(error){
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
+    }
+})
 
 export default router
