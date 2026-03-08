@@ -2,7 +2,7 @@ import express from 'express';
 import { connectToDatabase } from '../db.js';
 import { idKorisnika } from '../middleware/middleware.js';
 import { ObjectId } from 'mongodb'
-import { nadiDanPrehrane } from '../middleware/prehrana_middleware.js';
+import { nadiDanPrehrane, prehranaValidna } from '../middleware/prehrana_middleware.js';
 import { sviObroci } from '../middleware/obrok_middleware.js';
 import { svaHrana } from '../middleware/hrana_middleware.js';
 
@@ -34,7 +34,7 @@ router.get('/:datum',  [idKorisnika, nadiDanPrehrane], async (req, res)=>{
 
 })
 
-router.patch('/:datum/:obrok/dodaj', [idKorisnika, nadiDanPrehrane, sviObroci, svaHrana], async (req, res)=>{
+router.patch('/:datum/:obrok/dodaj', [idKorisnika, prehranaValidna, nadiDanPrehrane, sviObroci, svaHrana], async (req, res)=>{
     const zahtjev= req.body
     const obrok= req.params.obrok
     const svi_obroci= req.svi_obroci
@@ -96,7 +96,7 @@ router.patch('/:datum/:obrok/dodaj', [idKorisnika, nadiDanPrehrane, sviObroci, s
     }
 })
 
-router.patch('/:datum/:obrok/ukloni/:id', [idKorisnika, nadiDanPrehrane], async (req, res)=>{
+router.patch('/:datum/:obrok/ukloni/:id', [idKorisnika, prehranaValidna, nadiDanPrehrane], async (req, res)=>{
     const id= req.params.id
     const obrok= req.params.obrok
     let dan_prehrane= req.dan_prehrane
@@ -215,7 +215,7 @@ router.put('/update', [idKorisnika], async (req, res)=>{
     }
 })
 
-router.patch('/:datum/:obrok/uredi/:id', [idKorisnika, nadiDanPrehrane], async (req, res)=>{
+router.patch('/:datum/:obrok/uredi/:id', [idKorisnika, prehranaValidna, nadiDanPrehrane], async (req, res)=>{
     const id_stavka= req.params.id
     const obrok= req.params.obrok
     const grami= req.body.grami
@@ -269,6 +269,6 @@ router.patch('/:datum/:obrok/uredi/:id', [idKorisnika, nadiDanPrehrane], async (
         console.error('Greška:', error)
         return res.status(500).json({ greska: 'Greška u sustavu' })
     }
-})
+}) 
 
 export default router
