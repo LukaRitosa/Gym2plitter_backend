@@ -32,6 +32,8 @@ router.post('/', [obrokValidacija], async (req, res)=>{
 
     const hrana_collection= db.collection('hrana')
 
+    const obrok_collection= db.collection('obroci')
+
     let rez={}
 
     try{
