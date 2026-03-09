@@ -106,8 +106,9 @@ router.post('/prijava', [nadiKorisnika], async (req, res)=>{
     const lozinka_postoji= await checkPassword(lozinka, req.user.lozinka)
 
     if(!lozinka_postoji){
-        return res.status(401).send('Greška prilikom prijave')  
+        return res.status(401).json({ greska: 'Greška prilikom prijave' })
     }
+    
 
     let jwt_payload={
         username: req.user.username,
