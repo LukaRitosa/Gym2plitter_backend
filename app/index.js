@@ -7,13 +7,20 @@ import hranaRouter from './routes/hrana.js'
 import obrokRouter from './routes/obrok.js'
 import splitDanRouter from './routes/split_dan.js'
 import prehranaRouter from './routes/prehrana.js'
+import cors from "cors"
 
 
 
 let port = 3000
 let app= express()
 
+const corsOptions={
+    origin: ['http://localhost:5173']
+}
+
 app.use(express.json())
+app.use(cors(corsOptions))
+
 app.use('/split', splitRouter)
 app.use('/user', userRouter)
 app.use('/kalendar', kalendarRouter)

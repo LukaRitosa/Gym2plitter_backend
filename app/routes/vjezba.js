@@ -2,7 +2,7 @@ import express from 'express'
 import { connectToDatabase } from '../db.js';
 import { idKorisnika } from '../middleware/middleware.js';
 import { validirajVjezbu, sveVjezbe } from '../middleware/vjezba_middleware.js';
-import { body, validationResult } from 'express-validator'
+import { validationResult } from 'express-validator'
 import { ObjectId } from 'mongodb';
 
 
