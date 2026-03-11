@@ -28,9 +28,10 @@ router.get('/:id_dan', [idKorisnika, trenutniSplit, pronadeniDan, sveVjezbe], as
         if (postoji) {
             return {
                 ...postoji,
+                id: postoji._id.toString(),
                 brojSetova: v.broj_setova 
             }
-        } else {
+        } else { 
             return {
                 id: v.id,
                 brojSetova: v.broj_setova 

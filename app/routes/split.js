@@ -62,7 +62,22 @@ router.post('/', [validirajSplit, pripremiDane, dummyKalendar], async (req, res)
     }
 })
 
-router.post('/user_split/:id', [idKorisnika, sviSplitovi], async (req, res)=>{
+router.get('/user_split', [idKorisnika], async(req, res)=>{
+    const user_id= req.user._id.toString()
+
+    const user_splits= db.collection('userSplits')
+
+    try{
+        const splitovi= await user_splits.find({id_korisnik: user_id}).toArray()
+
+        return res.status(200).json(splitovi)
+    } catch(error){
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
+    }
+})
+
+router.post('/user_split/:id', [idKorisnika, sviSplitovi], async (req, res)=>{ 
     const split_id=req.params.id
     
     const id_user= req.user._id
@@ -163,7 +178,7 @@ router.post('/custom', [validirajSplit, idKorisnika, pripremiDane, dummyKalendar
         
         rez= await splits_collection.insertOne({id_korisnik: korisnik_id, ...novi_split})
 
-        return res.status(201).json(rez.insertedId)
+        return res.status(201).json({poruka: 'Split stvoren'})
     } catch(error){
         console.error('Greška:', error)
         return res.status(500).json({ greska: 'Greška u sustavu' })
@@ -197,7 +212,29 @@ router.delete('/custom/:id', [idKorisnika], async (req, res)=>{
     }
 })
 
+router.patch('/trenutni_split/:id', [idKorisnika], async (req, res)=>{
+    const id_split= req.params.id
+    const id_korisnik= req.user._id
 
+    const user_splits= db.collection('userSplits')
+    const users_collection= db.collection('users')
+
+    try{
+        const split= await user_splits.findOne({ _id: new ObjectId(id_split), id_korisnik: id_korisnik })
+
+        if(!split){
+            return res.status(404).json({greska: 'Split ne postoji'})
+        }
+
+        await users_collection.updateOne({ _id: new ObjectId(id_korisnik) }, {$set: { trenutniSplit: id_split } })
+
+        return res.status(200).json({poruka: 'Trenutni split promijenjen'})
+
+    } catch(error){
+        console.error('Greška:', error)
+        return res.status(500).json({ greska: 'Greška u sustavu' })
+    }
+})
 
 
 export default router

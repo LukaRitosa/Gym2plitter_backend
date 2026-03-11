@@ -27,7 +27,7 @@ export async function checkPassword(plainPassword, hashPassword){
 
 export async function generateJWT(payload){
     try{
-        let token= jwt.sign(payload, JWT_SECRET)
+        let token= jwt.sign(payload, JWT_SECRET, { expiresIn: '6h' })
         return token
     } catch(error){
         console.error(`Došlo je do greške prilikom stvaranje tokena: ${error}`);
@@ -39,7 +39,7 @@ export async function generateJWT(payload){
 
 export async function verifyJWT(token){
     try{
-        let decoded= jwt.verify(token, JWT_SECRET, { expiresIn: '6h' })
+        let decoded= jwt.verify(token, JWT_SECRET)
         return decoded
     } catch(error){
         console.error(`Došlo je do greške prilikom verifikacije JWT tokena: ${error}`);

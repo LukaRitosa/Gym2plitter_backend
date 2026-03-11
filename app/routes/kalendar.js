@@ -18,7 +18,7 @@ router.get('/', [idKorisnika, trenutniSplit], async (req, res)=>{
 })
 
 
-router.put('/update', [idKorisnika, trenutniSplit], async (req, res)=>{
+router.put('/update', [idKorisnika, trenutniSplit], async (req, res)=>{ 
     const user_collection= db.collection('users')
     const user_split_collection= db.collection('userSplits')
 

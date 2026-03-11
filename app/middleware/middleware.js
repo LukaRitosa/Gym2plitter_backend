@@ -17,7 +17,7 @@ export const nadiKorisnika= async (req, res, next)=>{
     }
     return next()
 }
-
+ 
 export const idKorisnika= async (req, res, next)=>{
     const header= req.headers.authorization
 
