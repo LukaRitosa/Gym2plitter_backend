@@ -157,7 +157,7 @@ router.put('/update', [idKorisnika], async (req, res)=>{
     let index_dana= kalendar.findIndex(d => d.datum===danasString)
     
     if(index_dana===6){
-        return res.status(400).json({greska: 'Pokušavate ažurirati točan kalendar'})
+        return res.status(200).json({poruka: 'kalendar validan'})
     }
 
     const zadnjiDate = new Date(kalendar.at(-1).datum)
