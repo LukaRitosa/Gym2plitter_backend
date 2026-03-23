@@ -11,7 +11,7 @@ import cors from "cors"
 
 
 
-let port = process.env.PORT || 3000
+let port = process.env.PORT /* || 3000 */
 let app= express()
 
 const corsOptions={
