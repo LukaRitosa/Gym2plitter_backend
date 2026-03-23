@@ -11,7 +11,7 @@ import cors from "cors"
 
 
 
-let port = 3000
+let port = process.env.PORT || 3000
 let app= express()
 
 const corsOptions={
@@ -19,8 +19,8 @@ const corsOptions={
 }
 
 app.use(express.json())
-app.use(cors(corsOptions))
-
+app.use(cors())
+ 
 app.use('/split', splitRouter)
 app.use('/user', userRouter)
 app.use('/kalendar', kalendarRouter)
