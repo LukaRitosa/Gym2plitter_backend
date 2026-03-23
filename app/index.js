@@ -15,11 +15,11 @@ let port = process.env.PORT || 3000
 let app= express()
 
 const corsOptions={
-    origin: ['http://localhost:5173']
+    origin: ['https://gym2plitter-frontend.onrender.com']
 }
 
 app.use(express.json())
-app.use(cors())
+app.use(cors(corsOptions))
  
 app.use('/split', splitRouter)
 app.use('/user', userRouter)
